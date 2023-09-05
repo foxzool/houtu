@@ -1,3 +1,4 @@
+use houtu_utility::ExtensibleObject;
 use serde::{Deserialize, Serialize};
 
 /// A bounding volume that encloses a tile or its content. At least one bounding volume property is required. Bounding volumes include `box`, `region`, or `sphere`.
@@ -23,4 +24,8 @@ pub struct BoundingVolume {
     /// The last element (with index 3) defines the radius in meters.
     /// The radius shall not be negative.
     pub sphere: Option<[f64; 4]>,
+}
+
+impl ExtensibleObject for BoundingVolume {
+    const TYPE_NAME: &'static str = "BoundingVolume";
 }
