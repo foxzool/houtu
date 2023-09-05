@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
+use houtu_utility::ExtensibleObject;
+
 use crate::asset::Asset;
 use crate::group::Group;
 use crate::metadata_entity::MetaDataEntity;
@@ -26,7 +28,7 @@ pub struct Tileset {
     /// A metadata entity that is associated with this tileset.
     pub metadata: Option<MetaDataEntity>,
     /// The error, in meters, introduced if this tileset is not rendered. At runtime, the geometric error is used to compute screen space error (SSE), i.e., the error measured in pixels.
-    pub geometric_error: Option<f64>,
+    pub geometric_error: f64,
     /// The root tile.
     pub root: Option<crate::tile::Tile>,
     /// Names of 3D Tiles extensions used somewhere in this tileset.
@@ -35,4 +37,8 @@ pub struct Tileset {
     /// Names of 3D Tiles extensions required to properly load this tileset. Each element of this array shall also be contained in `extensionsUsed`.
     #[serde(rename = "extensionsRequired")]
     pub extensions_required: Option<Vec<String>>,
+}
+
+impl ExtensibleObject for Tileset {
+    const TYPE_NAME: &'static str = "Tileset";
 }

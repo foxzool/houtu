@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use houtu_utility::ExtensibleObject;
+
 use crate::bounding_volume::BoundingVolume;
 use crate::content::Content;
 use crate::implicit_tiling::ImplicitTiling;
@@ -75,4 +77,8 @@ impl serde::Serialize for Refine {
             Refine::Other(value) => serializer.serialize_str(value),
         }
     }
+}
+
+impl ExtensibleObject for Tile {
+    const TYPE_NAME: &'static str = "Tile";
 }
