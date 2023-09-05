@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use houtu_utility::ExtensibleObject;
 
 /// A single property of a metadata class.
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ClassProperty {
     /// The name of the property, e.g. for display purposes.
     pub name: Option<String>,
@@ -11,10 +11,10 @@ pub struct ClassProperty {
     pub description: Option<String>,
     /// The element type.
     #[serde(rename = "type")]
-    pub type_: String,
+    pub element_type: ElementType,
     /// The datatype of the element's components. Required for `SCALAR`, `VECN`, and `MATN` types, and disallowed for other types.
     #[serde(rename = "componentType")]
-    pub component_type: Option<String>,
+    pub component_type: Option<ComponentType>,
     /// Enum ID as declared in the `enums` dictionary. Required when `type` is `ENUM`. Disallowed when `type` is not `ENUM`
     #[serde(rename = "enumType")]
     pub enum_type: Option<String>,
@@ -23,7 +23,11 @@ pub struct ClassProperty {
     pub array: Option<bool>,
     /// The number of elements in the array. Required when `array` is `true`.
     pub count: Option<usize>,
-
+    /// Specifies whether integer values are normalized.
+    /// Only applicable to SCALAR, VECN, and MATN types with integer component types.
+    /// For unsigned integer component types, values are normalized between [0.0, 1.0].
+    /// For signed integer component types, values are normalized between [-1.0, 1.0].
+    /// For all other component types, this property shall be false.
     pub normalized: Option<bool>,
     /// An offset to apply to property values.
     /// Only applicable to `SCALAR`, `VECN`, and `MATN` types when the component type is `FLOAT32` or `FLOAT64`,
@@ -70,28 +74,121 @@ pub struct ClassProperty {
 impl ExtensibleObject for ClassProperty {
     const TYPE_NAME: &'static str = "ClassProperty";
 }
-pub mod type_ {
-    pub const SCALAR: &str = "SCALAR";
-    pub const VEC2: &str = "VEC2";
-    pub const VEC3: &str = "VEC3";
-    pub const VEC4: &str = "VEC4";
-    pub const MAT2: &str = "MAT2";
-    pub const MAT3: &str = "MAT3";
-    pub const MAT4: &str = "MAT4";
-    pub const STRING: &str = "STRING";
-    pub const BOOLEAN: &str = "BOOLEAN";
-    pub const ENUM: &str = "ENUM";
+
+/// The element type.
+#[derive(Debug)]
+pub enum ElementType {
+    SCALAR,
+    VEC2,
+    VEC3,
+    VEC4,
+    MAT2,
+    MAT3,
+    MAT4,
+    STRING,
+    BOOLEAN,
+    ENUM,
+    Other(String),
 }
 
-pub mod component_type {
-    pub const INT8: &str = "INT8";
-    pub const UINT8: &str = "UINT8";
-    pub const INT16: &str = "INT16";
-    pub const UINT16: &str = "UINT16";
-    pub const INT32: &str = "INT32";
-    pub const UINT32: &str = "UINT32";
-    pub const INT64: &str = "INT64";
-    pub const UINT64: &str = "UINT64";
-    pub const FLOAT32: &str = "FLOAT32";
-    pub const FLOAT64: &str = "FLOAT64";
+impl<'de> serde::Deserialize<'de> for ElementType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        match value.as_str() {
+            "SCALAR" => Ok(ElementType::SCALAR),
+            "VEC2" => Ok(ElementType::VEC2),
+            "VEC3" => Ok(ElementType::VEC3),
+            "VEC4" => Ok(ElementType::VEC4),
+            "MAT2" => Ok(ElementType::MAT2),
+            "MAT3" => Ok(ElementType::MAT3),
+            "MAT4" => Ok(ElementType::MAT4),
+            "STRING" => Ok(ElementType::STRING),
+            "BOOLEAN" => Ok(ElementType::BOOLEAN),
+            "ENUM" => Ok(ElementType::ENUM),
+            _ => Ok(ElementType::Other(value)),
+        }
+    }
+}
+
+impl serde::Serialize for ElementType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            ElementType::SCALAR => serializer.serialize_str("SCALAR"),
+            ElementType::VEC2 => serializer.serialize_str("VEC2"),
+            ElementType::VEC3 => serializer.serialize_str("VEC3"),
+            ElementType::VEC4 => serializer.serialize_str("VEC4"),
+            ElementType::MAT2 => serializer.serialize_str("MAT2"),
+            ElementType::MAT3 => serializer.serialize_str("MAT3"),
+            ElementType::MAT4 => serializer.serialize_str("MAT4"),
+            ElementType::STRING => serializer.serialize_str("STRING"),
+            ElementType::BOOLEAN => serializer.serialize_str("BOOLEAN"),
+            ElementType::ENUM => serializer.serialize_str("ENUM"),
+            ElementType::Other(value) => serializer.serialize_str(value),
+        }
+    }
+}
+
+/// The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types.
+#[derive(Debug)]
+pub enum ComponentType {
+    INT8,
+    UINT8,
+    INT16,
+    UINT16,
+    INT32,
+    UINT32,
+    INT64,
+    UINT64,
+    FLOAT32,
+    FLOAT64,
+    Other(String),
+}
+
+impl<'de> serde::Deserialize<'de> for ComponentType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        match value.as_str() {
+            "INT8" => Ok(ComponentType::INT8),
+            "UINT8" => Ok(ComponentType::UINT8),
+            "INT16" => Ok(ComponentType::INT16),
+            "UINT16" => Ok(ComponentType::UINT16),
+            "INT32" => Ok(ComponentType::INT32),
+            "UINT32" => Ok(ComponentType::UINT32),
+            "INT64" => Ok(ComponentType::INT64),
+            "UINT64" => Ok(ComponentType::UINT64),
+            "FLOAT32" => Ok(ComponentType::FLOAT32),
+            "FLOAT64" => Ok(ComponentType::FLOAT64),
+            _ => Ok(ComponentType::Other(value)),
+        }
+    }
+}
+
+impl serde::Serialize for ComponentType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            ComponentType::INT8 => serializer.serialize_str("INT8"),
+            ComponentType::UINT8 => serializer.serialize_str("UINT8"),
+            ComponentType::INT16 => serializer.serialize_str("INT16"),
+            ComponentType::UINT16 => serializer.serialize_str("UINT16"),
+            ComponentType::INT32 => serializer.serialize_str("INT32"),
+            ComponentType::UINT32 => serializer.serialize_str("UINT32"),
+            ComponentType::INT64 => serializer.serialize_str("INT64"),
+            ComponentType::UINT64 => serializer.serialize_str("UINT64"),
+            ComponentType::FLOAT32 => serializer.serialize_str("FLOAT32"),
+            ComponentType::FLOAT64 => serializer.serialize_str("FLOAT64"),
+            ComponentType::Other(value) => serializer.serialize_str(value),
+        }
+    }
 }
