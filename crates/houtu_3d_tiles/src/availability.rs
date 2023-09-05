@@ -19,9 +19,9 @@ impl ExtensibleObject for Availability {
     const TYPE_NAME: &'static str = "Availability";
 }
 
-#[allow(dead_code)]
 pub struct Constant;
 
+#[allow(dead_code)]
 impl Constant {
     const UNAVAILABLE: i32 = 0;
     const AVAILABLE: i32 = 1;

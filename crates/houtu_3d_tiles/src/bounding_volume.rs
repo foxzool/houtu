@@ -1,7 +1,9 @@
 use houtu_utility::ExtensibleObject;
 use serde::{Deserialize, Serialize};
 
-/// A bounding volume that encloses a tile or its content. At least one bounding volume property is required. Bounding volumes include `box`, `region`, or `sphere`.
+/// A bounding volume that encloses a tile or its content.
+/// At least one bounding volume property is required.
+/// Bounding volumes include `box`, `region`, or `sphere`.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BoundingVolume {
     /// An array of 12 numbers that define an oriented bounding box.
@@ -11,7 +13,8 @@ pub struct BoundingVolume {
     /// The last three elements (indices 9, 10, and 11) define the z axis direction and half-length.
     #[serde(rename = "box")]
     pub r#box: Option<[f64; 12]>,
-    /// An array of six numbers that define a bounding geographic region in EPSG:4979 coordinates with the order [west, south, east, north, minimum height, maximum height].
+    /// An array of six numbers that define a bounding geographic region
+    /// in EPSG:4979 coordinates with the order [west, south, east, north, minimum height, maximum height].
     /// Longitudes and latitudes are in radians.
     /// The range for latitudes is [-PI/2,PI/2].
     /// The range for longitudes is [-PI,PI].

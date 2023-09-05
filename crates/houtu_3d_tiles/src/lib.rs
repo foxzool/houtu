@@ -4,6 +4,7 @@ pub mod bounding_volume;
 pub mod buffer;
 pub mod buffer_view;
 pub mod class;
+pub mod class_property;
 pub mod common;
 pub mod content;
 pub mod group;
