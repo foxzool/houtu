@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
+use houtu_utility::ExtensibleObject;
+
 /// Statistics about property values.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PropertyStatistics {
@@ -38,4 +40,8 @@ pub struct PropertyStatistics {
     pub sum: Option<serde_json::Value>,
     /// A dictionary, where each key corresponds to an enum `name` and each value is the number of occurrences of that enum. Only applicable when `type` is `ENUM`. For fixed-length arrays, this is an array of component-wise occurrences.
     pub occurrences: Option<HashMap<String, serde_json::Value>>,
+}
+
+impl ExtensibleObject for PropertyStatistics {
+    const TYPE_NAME: &'static str = "PropertyStatistics";
 }
