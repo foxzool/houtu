@@ -1,12 +1,17 @@
+use std::collections::HashMap;
+
+use serde::{Deserialize, Serialize};
+
+use houtu_utility::ExtensibleObject;
+
 use crate::class::Class;
 use crate::common::Enum;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// An object defining classes and enums.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Schema {
-    /// Unique identifier for the schema. Schema IDs shall be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`.
+    /// Unique identifier for the schema.
+    /// Schema IDs shall be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`.
     pub id: String,
     /// The name of the schema, e.g. for display purposes.
     pub name: Option<String>,
@@ -14,8 +19,14 @@ pub struct Schema {
     pub description: Option<String>,
     /// Application-specific version of the schema.
     pub version: Option<String>,
-    /// A dictionary, where each key is a class ID and each value is an object defining the class. Class IDs shall be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`.
+    /// A dictionary, where each key is a class ID and each value is an object defining the class.
+    /// Class IDs shall be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`.
     pub classes: Option<HashMap<String, Class>>,
-    /// A dictionary, where each key is an enum ID and each value is an object defining the values for the enum. Enum IDs shall be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`.
+    /// A dictionary, where each key is an enum ID and each value is an object defining the values for the enum.
+    /// Enum IDs shall be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`.
     pub enums: Option<HashMap<String, Enum>>,
+}
+
+impl ExtensibleObject for Schema {
+    const TYPE_NAME: &'static str = "Schema";
 }
