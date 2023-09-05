@@ -1,16 +1,20 @@
+use std::collections::HashMap;
+
+use serde::{Deserialize, Serialize};
+
 use crate::asset::Asset;
 use crate::group::Group;
 use crate::metadata_entity::MetaDataEntity;
+use crate::properties::Properties;
 use crate::schema::Schema;
 use crate::statistics::Statistics;
-use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Tileset {
     /// Metadata about the entire tileset.
     pub asset: Option<Asset>,
     /// A dictionary object of metadata about per-feature properties.
-    pub properties: Option<serde_json::Value>,
+    pub properties: Option<HashMap<String, Properties>>,
     /// An object defining the structure of metadata classes and enums. When this is defined, then schemaUri shall be undefined.
     pub schema: Option<Schema>,
     /// The URI (or IRI) of the external schema file. When this is defined, then schema shall be undefined.

@@ -1,6 +1,6 @@
-use houtu_utility::ExtensibleObject;
 use serde::{Deserialize, Serialize};
-use serde_aux::prelude::deserialize_default_from_null;
+
+use houtu_utility::ExtensibleObject;
 
 /// A single property of a metadata class.
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -20,17 +20,11 @@ pub struct ClassProperty {
     pub enum_type: Option<String>,
     /// Whether the property is an array. When `count` is defined the property is a fixed-length array.
     /// Otherwise the property is a variable-length array.
-    #[serde(deserialize_with = "deserialize_default_from_null")]
-    pub array: bool,
+    pub array: Option<bool>,
     /// The number of elements in the array. Required when `array` is `true`.
     pub count: Option<usize>,
-    /// Specifies whether integer values are normalized.
-    /// Only applicable to `SCALAR`, `VECN`, and `MATN` types with integer component types.
-    /// For unsigned integer component types, values are normalized between `[0.0, 1.0]`.
-    /// For signed integer component types, values are normalized between `[-1.0, 1.0]`.
-    /// For all other component types, this property shall be false.
-    #[serde(deserialize_with = "deserialize_default_from_null")]
-    pub normalized: bool,
+
+    pub normalized: Option<bool>,
     /// An offset to apply to property values.
     /// Only applicable to `SCALAR`, `VECN`, and `MATN` types when the component type is `FLOAT32` or `FLOAT64`,
     /// or when the property is `normalized`. Not applicable to variable-length arrays.
@@ -54,8 +48,7 @@ pub struct ClassProperty {
     /// If not required, individual entities may include `noData` values,
     /// or the entire property may be omitted. As a result, `noData` has no effect on a required property.
     /// Client implementations may use required properties to make performance optimizations.
-    #[serde(deserialize_with = "deserialize_default_from_null")]
-    pub required: bool,
+    pub required: Option<bool>,
     /// A `noData` value represents missing data — also known as a sentinel value — wherever it appears.
     /// `BOOLEAN` properties may not specify `noData` values.
     /// This is given as the plain property value,
