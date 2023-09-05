@@ -22,7 +22,7 @@ pub struct Tile {
     /// Specifies if additive or replacement refinement is used when traversing the tileset for rendering.
     /// This property is required for the root tile of a tileset; it is optional for all other tiles.
     /// The default is to inherit from the parent tile.
-    pub refine: Option<RefineType>,
+    pub refine: Option<Refine>,
     /// A floating-point 4x4 affine transformation matrix, stored in column-major order, that transforms the tile's content--i.e.,
     /// its features as well as content.boundingVolume, boundingVolume, and viewerRequestVolume--from the tile's local coordinate system to the parent tile's coordinate system, or, in the case of a root tile, from the tile's local coordinate system to the tileset's coordinate system. `transform` does not apply to any volume property when the volume is a region, defined in EPSG:4979 coordinates.
     /// `transform` scales the `geometricError` by the maximum scaling factor from the matrix.
@@ -43,9 +43,36 @@ pub struct Tile {
     pub children: Option<Vec<Tile>>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub enum RefineType {
+#[derive(Debug)]
+pub enum Refine {
     ADD,
     REPLACE,
-    String(String),
+    Other(String),
+}
+
+impl<'de> serde::Deserialize<'de> for Refine {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        match value.as_str() {
+            "ADD" => Ok(Refine::ADD),
+            "REPLACE" => Ok(Refine::REPLACE),
+            _ => Ok(Refine::Other(value)),
+        }
+    }
+}
+
+impl serde::Serialize for Refine {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            Refine::ADD => serializer.serialize_str("ADD"),
+            Refine::REPLACE => serializer.serialize_str("REPLACE"),
+            Refine::Other(value) => serializer.serialize_str(value),
+        }
+    }
 }
