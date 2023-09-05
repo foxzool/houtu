@@ -1,8 +1,9 @@
+use serde::{Deserialize, Serialize};
+
 use crate::bounding_volume::BoundingVolume;
 use crate::content::Content;
+use crate::implicit_tiling::ImplicitTiling;
 use crate::metadata_entity::MetaDataEntity;
-use crate::subtrees::SubTrees;
-use serde::{Deserialize, Serialize};
 
 /// A tile in a 3D Tiles tileset.
 #[derive(Debug, Serialize, Deserialize)]
@@ -46,29 +47,5 @@ pub struct Tile {
 pub enum RefineType {
     ADD,
     REPLACE,
-    String(String),
-}
-
-/// This object allows a tile to be implicitly subdivided.
-/// Tile and content availability and metadata is stored in subtrees which are referenced externally.
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ImplicitTiling {
-    /// A string describing the subdivision scheme used within the tileset.
-    #[serde(rename = "subdivisionScheme")]
-    pub subdivision_scheme: SubdivisionScheme,
-    /// The number of distinct levels in each subtree. For example, a quadtree with `subtreeLevels = 2` will have subtrees with 5 nodes (one root and 4 children).
-    #[serde(rename = "subtreeLevels")]
-    pub subtree_levels: i64,
-    /// The numbers of the levels in the tree with available tiles.
-    pub available_levels: i64,
-    /// An object describing the location of subtree files.
-    pub subtrees: SubTrees,
-}
-
-/// A string describing the subdivision scheme used within the tileset.
-#[derive(Debug, Serialize, Deserialize)]
-pub enum SubdivisionScheme {
-    QUADTREE,
-    OCTREE,
     String(String),
 }
