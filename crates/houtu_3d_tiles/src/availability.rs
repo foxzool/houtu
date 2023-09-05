@@ -1,5 +1,6 @@
-use houtu_utility::ExtensibleObject;
 use serde::{Deserialize, Serialize};
+
+use houtu_utility::ExtensibleObject;
 
 /// An object describing the availability of a set of elements.
 #[derive(Debug, Serialize, Deserialize)]
@@ -12,17 +13,43 @@ pub struct Availability {
     #[serde(rename = "availableCount")]
     pub available_count: Option<i64>,
     /// Integer indicating whether all of the elements are available (1) or all are unavailable (0).
-    pub constant: Option<i32>,
+    pub constant: Option<Constant>,
 }
 
 impl ExtensibleObject for Availability {
     const TYPE_NAME: &'static str = "Availability";
 }
 
-pub struct Constant;
+#[derive(Debug)]
+pub enum Constant {
+    AVAILABLE,
+    UNAVAILABLE,
+    Other(i32),
+}
 
-#[allow(dead_code)]
-impl Constant {
-    const UNAVAILABLE: i32 = 0;
-    const AVAILABLE: i32 = 1;
+impl<'de> serde::Deserialize<'de> for Constant {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = i32::deserialize(deserializer)?;
+        match value {
+            0 => Ok(Constant::UNAVAILABLE),
+            1 => Ok(Constant::AVAILABLE),
+            _ => Ok(Constant::Other(value)),
+        }
+    }
+}
+
+impl serde::Serialize for Constant {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            Constant::AVAILABLE => serializer.serialize_i32(1),
+            Constant::UNAVAILABLE => serializer.serialize_i32(0),
+            Constant::Other(value) => serializer.serialize_i32(*value),
+        }
+    }
 }
