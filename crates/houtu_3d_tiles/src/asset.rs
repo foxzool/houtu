@@ -1,5 +1,5 @@
+use houtu_utility::ExtensibleObject;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Asset {
@@ -10,8 +10,8 @@ pub struct Asset {
     /// updated.
     #[serde(rename = "tilesetVersion")]
     pub tileset_version: Option<String>,
-    /// Dictionary object with extension-specific objects.
-    pub extensions: Option<Value>,
-    /// Application-specific data.
-    pub extras: Option<Value>,
+}
+
+impl ExtensibleObject for Asset {
+    const TYPE_NAME: &'static str = "Asset";
 }

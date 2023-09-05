@@ -1,4 +1,5 @@
 pub mod asset;
+pub mod availability;
 pub mod bounding_volume;
 pub mod class;
 pub mod common;
