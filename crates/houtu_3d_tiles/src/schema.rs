@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use houtu_utility::ExtensibleObject;
 
 use crate::class::Class;
-use crate::common::Enum;
+use crate::enum_::Enum;
 
 /// An object defining classes and enums.
 #[derive(Debug, Serialize, Deserialize)]

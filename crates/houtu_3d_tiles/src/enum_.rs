@@ -29,13 +29,53 @@ impl Default for Enum {
 }
 
 #[allow(dead_code)]
-pub mod value_type {
-    pub const INT8: &str = "INT8";
-    pub const UINT8: &str = "UINT8";
-    pub const INT16: &str = "INT16";
-    pub const UINT16: &str = "UINT16";
-    pub const INT32: &str = "INT32";
-    pub const UINT32: &str = "UINT32";
-    pub const INT64: &str = "INT64";
-    pub const UINT64: &str = "UINT64";
+pub enum ValueType {
+    INT8,
+    UINT8,
+    INT16,
+    UINT16,
+    INT32,
+    UINT32,
+    INT64,
+    UINT64,
+    Other(String),
+}
+
+impl<'de> serde::Deserialize<'de> for ValueType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        match value.as_str() {
+            "INT8" => Ok(ValueType::INT8),
+            "UINT8" => Ok(ValueType::UINT8),
+            "INT16" => Ok(ValueType::INT16),
+            "UINT16" => Ok(ValueType::UINT16),
+            "INT32" => Ok(ValueType::INT32),
+            "UINT32" => Ok(ValueType::UINT32),
+            "INT64" => Ok(ValueType::INT64),
+            "UINT64" => Ok(ValueType::UINT64),
+            _ => Ok(ValueType::Other(value)),
+        }
+    }
+}
+
+impl serde::Serialize for ValueType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        match self {
+            ValueType::INT8 => serializer.serialize_str("INT8"),
+            ValueType::UINT8 => serializer.serialize_str("UINT8"),
+            ValueType::INT16 => serializer.serialize_str("INT16"),
+            ValueType::UINT16 => serializer.serialize_str("UINT16"),
+            ValueType::INT32 => serializer.serialize_str("INT32"),
+            ValueType::UINT32 => serializer.serialize_str("UINT32"),
+            ValueType::INT64 => serializer.serialize_str("INT64"),
+            ValueType::UINT64 => serializer.serialize_str("UINT64"),
+            ValueType::Other(value) => serializer.serialize_str(value),
+        }
+    }
 }

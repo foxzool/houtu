@@ -7,7 +7,6 @@ pub mod buffer_view;
 pub mod class;
 pub mod class_property;
 pub mod class_statistics;
-pub mod common;
 pub mod content;
 pub mod enum_;
 pub mod enum_value;
