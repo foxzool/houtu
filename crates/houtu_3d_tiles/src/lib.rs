@@ -17,6 +17,8 @@ pub mod implicit_tiling;
 pub mod metadata_entity;
 pub mod properties;
 pub mod properties_statistics;
+pub mod property_table;
+pub mod property_table_property;
 pub mod schema;
 pub mod statistics;
 pub mod subtrees;
