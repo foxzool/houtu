@@ -1,8 +1,14 @@
 pub mod asset;
+pub mod bounding_volume;
 pub mod class;
 pub mod common;
-
+pub mod content;
+pub mod group;
+pub mod metadata_entity;
 pub mod properties;
 pub mod schema;
 pub mod statistics;
+pub mod subtrees;
+pub mod template_uri;
+pub mod tile;
 pub mod tileset;
