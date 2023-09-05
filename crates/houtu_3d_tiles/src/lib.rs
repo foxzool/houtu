@@ -12,6 +12,7 @@ pub mod content;
 pub mod enum_;
 pub mod enum_value;
 pub mod group;
+pub mod group_metadata;
 pub mod metadata_entity;
 pub mod properties;
 pub mod properties_statistics;

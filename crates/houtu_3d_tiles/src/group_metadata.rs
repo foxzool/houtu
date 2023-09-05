@@ -4,12 +4,11 @@ use serde::{Deserialize, Serialize};
 
 use houtu_utility::ExtensibleObject;
 
-/// An object containing a reference to a class from a metadata schema,
-/// and property values that conform to the properties of that class.
+/// An object containing metadata about a group.
 #[derive(Debug, Serialize, Deserialize)]
-pub struct MetaDataEntity {
+pub struct GroupMetadata {
     /// The class that property values conform to.
-    /// The value shall be a class ID declared in the `classes` dictionary of the metadata schema.
+    /// The value shall be a class ID declared in the classes dictionary of the metadata schema.
     pub class: String,
     /// A dictionary, where each key corresponds to a property ID in the class' `properties` dictionary
     /// and each value contains the property values. The type of the value shall
@@ -21,6 +20,6 @@ pub struct MetaDataEntity {
     pub properties: HashMap<String, serde_json::Value>,
 }
 
-impl ExtensibleObject for MetaDataEntity {
-    const TYPE_NAME: &'static str = "MetaDataEntity";
+impl ExtensibleObject for GroupMetadata {
+    const TYPE_NAME: &'static str = "GroupMetadata";
 }
