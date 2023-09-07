@@ -6,6 +6,15 @@ use serde::{Deserialize, Serialize};
 pub struct BinaryBodyOffset {
     pub byte_offset: u64,
 }
+
+/// An object defining the reference to a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct BinaryBodyReference {
+    /// The datatype of components in the property. This is defined only if the semantic allows for overriding the implicit component type. These cases are specified in each tile format.
+    pub component_type: ComponentType,
+}
+
 /// The datatype of components in the property. This is defined only if the semantic allows for overriding the implicit component type. These cases are specified in each tile format.
 #[derive(Debug, PartialEq)]
 #[allow(non_camel_case_types)]
@@ -60,18 +69,97 @@ impl serde::Serialize for ComponentType {
     }
 }
 
+#[derive(Debug, Serialize, PartialEq)]
+pub enum GlobalPropertyInteger {
+    BinaryBodyOffset(BinaryBodyOffset),
+    Integer(i64),
+}
+
+impl<'de> Deserialize<'de> for GlobalPropertyInteger {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = serde_json::Value::deserialize(deserializer)?;
+        match value {
+            serde_json::Value::Object(object) => {
+                match serde_json::from_value(serde_json::to_value(object).unwrap()) {
+                    Ok(binary_body_offset) => {
+                        Ok(GlobalPropertyInteger::BinaryBodyOffset(binary_body_offset))
+                    }
+                    Err(_) => Err(serde::de::Error::custom("byteOffset must be defined")),
+                }
+            }
+            serde_json::Value::Number(number) => match number.as_i64() {
+                None => {
+                    let number = number.as_f64().unwrap();
+                    Ok(GlobalPropertyInteger::Integer(number as i64))
+                }
+                Some(integer) => Ok(GlobalPropertyInteger::Integer(integer)),
+            },
+            _ => Err(serde::de::Error::custom(
+                "byteOffset or integer must be defined",
+            )),
+        }
+    }
+}
+
+/// A `GlobalPropertyCartesian3` object defining a 3-component numeric property for all features. Details about this property are described in the 3D Tiles specification.
+#[derive(Debug, Serialize, PartialEq)]
+pub enum GlobalPropertyCartesian3 {
+    BinaryBodyOffset(BinaryBodyOffset),
+    Cartesian3([f64; 3]),
+}
+
+impl<'de> Deserialize<'de> for GlobalPropertyCartesian3 {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = serde_json::Value::deserialize(deserializer)?;
+        match value {
+            serde_json::Value::Object(object) => {
+                match serde_json::from_value(serde_json::to_value(object).unwrap()) {
+                    Ok(binary_body_offset) => Ok(GlobalPropertyCartesian3::BinaryBodyOffset(
+                        binary_body_offset,
+                    )),
+                    Err(_) => Err(serde::de::Error::custom("byteOffset must be defined")),
+                }
+            }
+            serde_json::Value::Array(value) => {
+                if value.len() == 3 {
+                    let mut array = [0.0; 3];
+                    for (i, v) in value.iter().enumerate() {
+                        if let Some(v) = v.as_f64() {
+                            array[i] = v;
+                        } else {
+                            return Err(serde::de::Error::custom("Invalid array"));
+                        }
+                    }
+                    Ok(GlobalPropertyCartesian3::Cartesian3(array))
+                } else {
+                    Err(serde::de::Error::custom("Invalid array"))
+                }
+            }
+            _ => Err(serde::de::Error::custom(
+                "byteOffset, cartesian3 must be defined",
+            )),
+        }
+    }
+}
+
 /// A user-defined property which specifies application-specific metadata in a tile. Values can refer to sections in the binary body with a `BinaryBodyReference` object. Global values can be also be defined directly in the JSON.
 #[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum Property {
     /// An object defining the offset into a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.    
-    BinaryBodyOffset { byte_offset: u64 },
+    Offset(BinaryBodyOffset),
     /// An object defining the reference to a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.
-    BinaryBodyReference { component_type: ComponentType },
+    Reference(BinaryBodyReference),
     /// An object defining a global boolean property value for all features.
-    GlobalPropertyBoolean(bool),
+    Boolean(bool),
     /// An object defining a global integer property value for all features.
-    GlobalPropertyInteger(i64),
+    Integer(i64),
     /// An object defining a global numeric property value for all features.
     GlobalPropertyNumber(f64),
     /// An object defining a global 3-component numeric property values for all features.
@@ -88,10 +176,10 @@ impl<'de> serde::Deserialize<'de> for Property {
         let value = serde_json::Value::deserialize(deserializer)?;
 
         match value {
-            serde_json::Value::Bool(value) => Ok(Property::GlobalPropertyBoolean(value)),
+            serde_json::Value::Bool(value) => Ok(Property::Boolean(value)),
             serde_json::Value::Number(value) => {
                 if let Some(value) = value.as_i64() {
-                    Ok(Property::GlobalPropertyInteger(value))
+                    Ok(Property::Integer(value))
                 } else if let Some(value) = value.as_f64() {
                     Ok(Property::GlobalPropertyNumber(value))
                 } else {
@@ -128,14 +216,14 @@ impl<'de> serde::Deserialize<'de> for Property {
                     let byte_offset = value
                         .as_u64()
                         .ok_or_else(|| serde::de::Error::custom("Invalid byteOffset"))?;
-                    Ok(Property::BinaryBodyOffset { byte_offset })
+                    Ok(Property::Offset(BinaryBodyOffset { byte_offset }))
                 } else if let Some(value) = value.get("componentType") {
                     let component_type =
                         serde_json::from_value(serde_json::to_value(value).unwrap())
                             .map_err(|_| serde::de::Error::custom("Invalid componentType"))?;
-                    Ok(Property::BinaryBodyReference { component_type })
+                    Ok(Property::Reference(BinaryBodyReference { component_type }))
                 } else {
-                    Err(serde::de::Error::custom("Invalid array"))
+                    Err(serde::de::Error::custom("Invalid object"))
                 }
             }
 
@@ -156,7 +244,10 @@ mod test {
         }"#;
         let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
         let property: Property = serde_json::from_value(json_value).unwrap();
-        assert_eq!(property, Property::BinaryBodyOffset { byte_offset: 10 });
+        assert_eq!(
+            property,
+            Property::Offset(BinaryBodyOffset { byte_offset: 10 })
+        );
 
         let json = r#"
         {
@@ -166,9 +257,9 @@ mod test {
         let property: Property = serde_json::from_value(json_value).unwrap();
         assert_eq!(
             property,
-            Property::BinaryBodyReference {
+            Property::Reference(BinaryBodyReference {
                 component_type: ComponentType::INT
-            }
+            })
         );
 
         let json = r#"
@@ -179,20 +270,20 @@ mod test {
         let property: Property = serde_json::from_value(json_value).unwrap();
         assert_eq!(
             property,
-            Property::BinaryBodyReference {
+            Property::Reference(BinaryBodyReference {
                 component_type: ComponentType::Other("OTHER".to_string())
-            }
+            })
         );
 
         let json = r#"true"#;
         let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
         let property: Property = serde_json::from_value(json_value).unwrap();
-        assert_eq!(property, Property::GlobalPropertyBoolean(true));
+        assert_eq!(property, Property::Boolean(true));
 
         let json = r#"1"#;
         let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
         let property: Property = serde_json::from_value(json_value).unwrap();
-        assert_eq!(property, Property::GlobalPropertyInteger(1));
+        assert_eq!(property, Property::Integer(1));
 
         let json = r#"1.0"#;
         let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
