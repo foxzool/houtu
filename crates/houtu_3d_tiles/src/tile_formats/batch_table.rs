@@ -46,8 +46,8 @@ impl<'de> serde::Deserialize<'de> for PropertySchema {
                     (byte_offset, component_type, type_)
                 {
                     let byte_offset = byte_offset.as_u64().unwrap();
-                    let component_type = serde_json::from_value(component_type.clone());
-                    let type_ = serde_json::from_value(type_.clone());
+                    let component_type = serde_json::from_str(component_type.to_string().as_str());
+                    let type_ = serde_json::from_str(type_.to_string().as_str());
                     if component_type.is_err() || type_.is_err() {
                         return Err(serde::de::Error::custom(
                             "byteOffset, componentType, type must be defined",

@@ -1,5 +1,11 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
+/// An object defining the offset into a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct BinaryBodyOffset {
+    pub byte_offset: u64,
+}
 /// The datatype of components in the property. This is defined only if the semantic allows for overriding the implicit component type. These cases are specified in each tile format.
 #[derive(Debug, PartialEq)]
 #[allow(non_camel_case_types)]
@@ -124,8 +130,9 @@ impl<'de> serde::Deserialize<'de> for Property {
                         .ok_or_else(|| serde::de::Error::custom("Invalid byteOffset"))?;
                     Ok(Property::BinaryBodyOffset { byte_offset })
                 } else if let Some(value) = value.get("componentType") {
-                    let component_type = serde_json::from_value(value.clone())
-                        .map_err(|_| serde::de::Error::custom("Invalid componentType"))?;
+                    let component_type =
+                        serde_json::from_value(serde_json::to_value(value).unwrap())
+                            .map_err(|_| serde::de::Error::custom("Invalid componentType"))?;
                     Ok(Property::BinaryBodyReference { component_type })
                 } else {
                     Err(serde::de::Error::custom("Invalid array"))
