@@ -148,6 +148,50 @@ impl<'de> Deserialize<'de> for GlobalPropertyCartesian3 {
     }
 }
 
+/// An object defining a global 4-component numeric property values for all features.
+#[derive(Debug, Serialize, PartialEq)]
+pub enum GlobalPropertyCartesian4 {
+    BinaryBodyOffset(BinaryBodyOffset),
+    Cartesian4([f64; 4]),
+}
+
+impl<'de> Deserialize<'de> for GlobalPropertyCartesian4 {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = serde_json::Value::deserialize(deserializer)?;
+        match value {
+            serde_json::Value::Object(object) => {
+                match serde_json::from_value(serde_json::to_value(object).unwrap()) {
+                    Ok(binary_body_offset) => Ok(GlobalPropertyCartesian4::BinaryBodyOffset(
+                        binary_body_offset,
+                    )),
+                    Err(_) => Err(serde::de::Error::custom("byteOffset must be defined")),
+                }
+            }
+            serde_json::Value::Array(value) => {
+                if value.len() == 4 {
+                    let mut array = [0.0; 4];
+                    for (i, v) in value.iter().enumerate() {
+                        if let Some(v) = v.as_f64() {
+                            array[i] = v;
+                        } else {
+                            return Err(serde::de::Error::custom("Invalid array"));
+                        }
+                    }
+                    Ok(GlobalPropertyCartesian4::Cartesian4(array))
+                } else {
+                    Err(serde::de::Error::custom("Invalid array"))
+                }
+            }
+            _ => Err(serde::de::Error::custom(
+                "byteOffset, cartesian3 must be defined",
+            )),
+        }
+    }
+}
+
 pub type GlobalPropertyBoolean = bool;
 
 /// A user-defined property which specifies application-specific metadata in a tile. Values can refer to sections in the binary body with a `BinaryBodyReference` object. Global values can be also be defined directly in the JSON.
