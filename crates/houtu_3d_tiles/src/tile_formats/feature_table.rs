@@ -148,6 +148,8 @@ impl<'de> Deserialize<'de> for GlobalPropertyCartesian3 {
     }
 }
 
+pub type GlobalPropertyBoolean = bool;
+
 /// A user-defined property which specifies application-specific metadata in a tile. Values can refer to sections in the binary body with a `BinaryBodyReference` object. Global values can be also be defined directly in the JSON.
 #[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
