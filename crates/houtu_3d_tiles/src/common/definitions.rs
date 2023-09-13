@@ -195,7 +195,7 @@ impl<'de> serde::Deserialize<'de> for NoDataValue {
 
 #[derive(Debug, PartialEq)]
 pub enum AnyValue {
-    Numeric(NumericValue),
+    Numeric(f64),
     NumericArray1D(NumericArray1D),
     NumericArray2D(NumericArray2D),
     Boolean(bool),
@@ -212,7 +212,7 @@ impl<'de> serde::Deserialize<'de> for AnyValue {
         match serde_json::Value::deserialize(deserializer)? {
             serde_json::Value::Number(number) => {
                 if let Some(number) = number.as_f64() {
-                    Ok(AnyValue::Numeric(NumericValue::Numeric(number)))
+                    Ok(AnyValue::Numeric(number))
                 } else {
                     Err(serde::de::Error::custom("Not a valid numeric value"))
                 }
@@ -244,13 +244,9 @@ impl<'de> serde::Deserialize<'de> for AnyValue {
                     }
                 }
                 if numeric_array_1d.len() > 0 {
-                    Ok(AnyValue::Numeric(NumericValue::NumericArray1D(
-                        numeric_array_1d,
-                    )))
+                    Ok(AnyValue::NumericArray1D(numeric_array_1d))
                 } else if numeric_array_2d.len() > 0 {
-                    Ok(AnyValue::Numeric(NumericValue::NumericArray2D(
-                        numeric_array_2d,
-                    )))
+                    Ok(AnyValue::NumericArray2D(numeric_array_2d))
                 } else if boolean_array_1d.len() > 0 {
                     Ok(AnyValue::Boolean1D(boolean_array_1d))
                 } else if string_array_1d.len() > 0 {
@@ -401,23 +397,17 @@ mod tests {
     fn deserialize_any_value() {
         let json = r#"1.0"#;
         let any_value: AnyValue = serde_json::from_str(json).unwrap();
-        assert_eq!(any_value, AnyValue::Numeric(NumericValue::Numeric(1.0)));
+        assert_eq!(any_value, AnyValue::Numeric(1.0));
 
         let json = r#"[1.0, 2.0, 3.0]"#;
         let any_value: AnyValue = serde_json::from_str(json).unwrap();
-        assert_eq!(
-            any_value,
-            AnyValue::Numeric(NumericValue::NumericArray1D(vec![1.0, 2.0, 3.0]))
-        );
+        assert_eq!(any_value, AnyValue::NumericArray1D(vec![1.0, 2.0, 3.0]));
 
         let json = r#"[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]"#;
         let any_value: AnyValue = serde_json::from_str(json).unwrap();
         assert_eq!(
             any_value,
-            AnyValue::Numeric(NumericValue::NumericArray2D(vec![
-                vec![1.0, 2.0, 3.0],
-                vec![4.0, 5.0, 6.0],
-            ]))
+            AnyValue::NumericArray2D(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0],])
         );
 
         let json = r#""test""#;
@@ -446,18 +436,15 @@ mod tests {
 
     #[test]
     fn serialize_any_value() {
-        let any_value = AnyValue::Numeric(NumericValue::Numeric(1.0));
+        let any_value = AnyValue::Numeric(1.0);
         let json = serde_json::to_string(&any_value).unwrap();
         assert_eq!(json, r#"1.0"#);
 
-        let any_value = AnyValue::Numeric(NumericValue::NumericArray1D(vec![1.0, 2.0, 3.0]));
+        let any_value = AnyValue::NumericArray1D(vec![1.0, 2.0, 3.0]);
         let json = serde_json::to_string(&any_value).unwrap();
         assert_eq!(json, r#"[1.0,2.0,3.0]"#);
 
-        let any_value = AnyValue::Numeric(NumericValue::NumericArray2D(vec![
-            vec![1.0, 2.0, 3.0],
-            vec![4.0, 5.0, 6.0],
-        ]));
+        let any_value = AnyValue::NumericArray2D(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]);
         let json = serde_json::to_string(&any_value).unwrap();
         assert_eq!(json, r#"[[1.0,2.0,3.0],[4.0,5.0,6.0]]"#);
 

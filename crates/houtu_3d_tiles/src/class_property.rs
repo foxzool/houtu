@@ -250,6 +250,9 @@ mod tests {
 
     #[test]
     fn test_component_type() {
+        let component_type = ComponentType::default();
+        assert_eq!(component_type, ComponentType::INT8);
+
         let json = json!("INT8");
         let component_type: ComponentType = serde_json::from_value(json).unwrap();
         assert_eq!(component_type, ComponentType::INT8);
@@ -332,10 +335,7 @@ mod tests {
         assert_eq!(class_property.min, Some(NumericValue::Numeric(1.0)));
         assert_eq!(class_property.required, Some(true));
         assert_eq!(class_property.no_data, Some(NoDataValue::Numeric(1.0)));
-        assert_eq!(
-            class_property.default,
-            Some(AnyValue::Numeric(NumericValue::Numeric(1.0)))
-        );
+        assert_eq!(class_property.default, Some(AnyValue::Numeric(1.0)));
         assert_eq!(class_property.semantic, Some("semantic".to_owned()));
 
         let json = json!({
