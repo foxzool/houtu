@@ -17,3 +17,48 @@ pub struct Class {
 impl ExtensibleObject for Class {
     const TYPE_NAME: &'static str = "Class";
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::class_property::ElementType;
+    use serde_json::json;
+
+    #[test]
+    fn test_class() {
+        let json = json!(
+            {
+                "name": "name",
+                "description": "description",
+                "properties": {
+                    "example_STRING": {
+                        "name": "name",
+                        "description": "description",
+                        "semantic": "semantic",
+                        "type": "STRING"
+                    }
+                }
+            }
+        );
+        let class: Class = serde_json::from_value(json).unwrap();
+        assert_eq!(class.name, Some("name".to_owned()));
+        assert_eq!(class.description, Some("description".to_owned()));
+        assert_eq!(
+            class.properties,
+            Some({
+                let mut map = HashMap::new();
+                map.insert(
+                    "example_STRING".to_owned(),
+                    ClassProperty {
+                        name: Some("name".to_owned()),
+                        description: Some("description".to_owned()),
+                        semantic: Some("semantic".to_owned()),
+                        type_: ElementType::STRING,
+                        ..Default::default()
+                    },
+                );
+                map
+            })
+        );
+    }
+}

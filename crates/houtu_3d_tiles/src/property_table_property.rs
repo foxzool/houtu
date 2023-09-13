@@ -72,8 +72,8 @@ pub enum ArrayOffsetType {
 
 impl<'de> serde::Deserialize<'de> for ArrayOffsetType {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: serde::Deserializer<'de>,
+    where
+        D: serde::Deserializer<'de>,
     {
         let value = String::deserialize(deserializer)?;
         match value.as_str() {
@@ -88,8 +88,8 @@ impl<'de> serde::Deserialize<'de> for ArrayOffsetType {
 
 impl serde::Serialize for ArrayOffsetType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer,
+    where
+        S: serde::Serializer,
     {
         match self {
             ArrayOffsetType::UINT8 => serializer.serialize_str("UINT8"),
@@ -113,8 +113,8 @@ pub enum StringOffsetType {
 
 impl<'de> serde::Deserialize<'de> for StringOffsetType {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: serde::Deserializer<'de>,
+    where
+        D: serde::Deserializer<'de>,
     {
         let value = String::deserialize(deserializer)?;
         match value.as_str() {
@@ -129,8 +129,8 @@ impl<'de> serde::Deserialize<'de> for StringOffsetType {
 
 impl serde::Serialize for StringOffsetType {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: serde::Serializer,
+    where
+        S: serde::Serializer,
     {
         match self {
             StringOffsetType::UINT8 => serializer.serialize_str("UINT8"),
@@ -146,10 +146,63 @@ impl ExtensibleObject for PropertyTableProperty {
     const TYPE_NAME: &'static str = "PropertyTableProperty";
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_string_offset_type() {
+        let json = r#""UINT8""#;
+        let string_offset_type: StringOffsetType = serde_json::from_str(json).unwrap();
+        assert_eq!(string_offset_type, StringOffsetType::UINT8);
+
+        let json = r#""UINT16""#;
+        let string_offset_type: StringOffsetType = serde_json::from_str(json).unwrap();
+        assert_eq!(string_offset_type, StringOffsetType::UINT16);
+
+        let json = r#""UINT32""#;
+        let string_offset_type: StringOffsetType = serde_json::from_str(json).unwrap();
+        assert_eq!(string_offset_type, StringOffsetType::UINT32);
+
+        let json = r#""UINT64""#;
+        let string_offset_type: StringOffsetType = serde_json::from_str(json).unwrap();
+        assert_eq!(string_offset_type, StringOffsetType::UINT64);
+
+        let json = r#""OTHER""#;
+        let string_offset_type: StringOffsetType = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            string_offset_type,
+            StringOffsetType::Other("OTHER".to_owned())
+        );
+    }
+
+    #[test]
+    fn test_array_offset_type() {
+        let json = r#""UINT8""#;
+        let array_offset_type: ArrayOffsetType = serde_json::from_str(json).unwrap();
+        assert_eq!(array_offset_type, ArrayOffsetType::UINT8);
+
+        let json = r#""UINT16""#;
+        let array_offset_type: ArrayOffsetType = serde_json::from_str(json).unwrap();
+        assert_eq!(array_offset_type, ArrayOffsetType::UINT16);
+
+        let json = r#""UINT32""#;
+        let array_offset_type: ArrayOffsetType = serde_json::from_str(json).unwrap();
+        assert_eq!(array_offset_type, ArrayOffsetType::UINT32);
+
+        let json = r#""UINT64""#;
+        let array_offset_type: ArrayOffsetType = serde_json::from_str(json).unwrap();
+        assert_eq!(array_offset_type, ArrayOffsetType::UINT64);
+
+        let json = r#""OTHER""#;
+        let array_offset_type: ArrayOffsetType = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            array_offset_type,
+            ArrayOffsetType::Other("OTHER".to_owned())
+        );
+    }
+
     #[test]
     fn test_property_table_property() {
         let json = r#"
@@ -169,11 +222,45 @@ mod tests {
         assert_eq!(property_table_property.values, 1);
         assert_eq!(property_table_property.array_offsets, Some(1));
         assert_eq!(property_table_property.string_offsets, Some(1));
-        assert_eq!(property_table_property.array_offset_type, Some(ArrayOffsetType::UINT8));
-        assert_eq!(property_table_property.string_offset_type, Some(StringOffsetType::UINT8));
-        assert_eq!(property_table_property.offset, Some(serde_json::Value::Number(serde_json::Number::from(1))));
-        assert_eq!(property_table_property.scale, Some(serde_json::Value::Number(serde_json::Number::from(1))));
-        assert_eq!(property_table_property.max, Some(serde_json::Value::Number(serde_json::Number::from(1))));
-        assert_eq!(property_table_property.min, Some(serde_json::Value::Number(serde_json::Number::from(1))));
+        assert_eq!(
+            property_table_property.array_offset_type,
+            Some(ArrayOffsetType::UINT8)
+        );
+        assert_eq!(
+            property_table_property.string_offset_type,
+            Some(StringOffsetType::UINT8)
+        );
+        assert_eq!(
+            property_table_property.offset,
+            Some(serde_json::Value::Number(serde_json::Number::from(1)))
+        );
+        assert_eq!(
+            property_table_property.scale,
+            Some(serde_json::Value::Number(serde_json::Number::from(1)))
+        );
+        assert_eq!(
+            property_table_property.max,
+            Some(serde_json::Value::Number(serde_json::Number::from(1)))
+        );
+        assert_eq!(
+            property_table_property.min,
+            Some(serde_json::Value::Number(serde_json::Number::from(1)))
+        );
+
+        let json = json!(
+        {
+            "values": 1
+        });
+
+        let property_table_property: PropertyTableProperty = serde_json::from_value(json).unwrap();
+        assert_eq!(property_table_property.values, 1);
+        assert_eq!(property_table_property.array_offsets, None);
+        assert_eq!(property_table_property.string_offsets, None);
+        assert_eq!(property_table_property.array_offset_type, None);
+        assert_eq!(property_table_property.string_offset_type, None);
+        assert_eq!(property_table_property.offset, None);
+        assert_eq!(property_table_property.scale, None);
+        assert_eq!(property_table_property.max, None);
+        assert_eq!(property_table_property.min, None);
     }
 }

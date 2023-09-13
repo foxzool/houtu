@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use houtu_utility::ExtensibleObject;
 
 /// A single property of a metadata class.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct ClassProperty {
     /// The name of the property, e.g. for display purposes.
     pub name: Option<String>,
@@ -11,7 +11,7 @@ pub struct ClassProperty {
     pub description: Option<String>,
     /// The element type.
     #[serde(rename = "type")]
-    pub element_type: ElementType,
+    pub type_: ElementType,
     /// The datatype of the element's components. Required for `SCALAR`, `VECN`, and `MATN` types, and disallowed for other types.
     #[serde(rename = "componentType")]
     pub component_type: Option<ComponentType>,
@@ -76,8 +76,9 @@ impl ExtensibleObject for ClassProperty {
 }
 
 /// The element type.
-#[derive(Debug)]
+#[derive(Debug, Default, PartialEq)]
 pub enum ElementType {
+    #[default]
     SCALAR,
     VEC2,
     VEC3,
@@ -135,8 +136,9 @@ impl serde::Serialize for ElementType {
 }
 
 /// The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types.
-#[derive(Debug)]
+#[derive(Debug, Default, PartialEq)]
 pub enum ComponentType {
+    #[default]
     INT8,
     UINT8,
     INT16,
