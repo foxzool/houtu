@@ -16,8 +16,8 @@ pub type StringArray1D = Vec<String>;
 #[derive(Debug, PartialEq)]
 pub enum NumericValue {
     Numeric(f64),
-    Array1D(NumericArray1D),
-    Array2D(NumericArray2D),
+    NumericArray1D(NumericArray1D),
+    NumericArray2D(NumericArray2D),
 }
 
 impl<'de> serde::Deserialize<'de> for NumericValue {
@@ -56,9 +56,9 @@ impl<'de> serde::Deserialize<'de> for NumericValue {
                     }
                 }
                 if numeric_array_1d.len() > 0 {
-                    Ok(NumericValue::Array1D(numeric_array_1d))
+                    Ok(NumericValue::NumericArray1D(numeric_array_1d))
                 } else if numeric_array_2d.len() > 0 {
-                    Ok(NumericValue::Array2D(numeric_array_2d))
+                    Ok(NumericValue::NumericArray2D(numeric_array_2d))
                 } else {
                     Err(serde::de::Error::custom("Not a valid numeric value"))
                 }
@@ -76,14 +76,14 @@ impl serde::Serialize for NumericValue {
     {
         match self {
             NumericValue::Numeric(value) => serializer.serialize_f64(*value),
-            NumericValue::Array1D(array) => {
+            NumericValue::NumericArray1D(array) => {
                 let mut seq = serializer.serialize_seq(Some(array.len()))?;
                 for value in array {
                     seq.serialize_element(value)?;
                 }
                 seq.end()
             }
-            NumericValue::Array2D(array) => {
+            NumericValue::NumericArray2D(array) => {
                 let value = serde_json::to_value(&array);
 
                 match value {
@@ -100,7 +100,7 @@ impl serde::Serialize for NumericValue {
 pub enum NoDataValue {
     Numeric(f64),
     Array1D(NumericArray1D),
-    Array2D(NumericArray2D),
+    NumericArray2D(NumericArray2D),
     String(String),
     String1D(Vec<String>),
 }
@@ -119,7 +119,7 @@ impl serde::Serialize for NoDataValue {
                 }
                 seq.end()
             }
-            NoDataValue::Array2D(array) => {
+            NoDataValue::NumericArray2D(array) => {
                 let value = serde_json::to_value(&array);
 
                 match value {
@@ -179,7 +179,7 @@ impl<'de> serde::Deserialize<'de> for NoDataValue {
                 if numeric_array_1d.len() > 0 {
                     Ok(NoDataValue::Array1D(numeric_array_1d))
                 } else if numeric_array_2d.len() > 0 {
-                    Ok(NoDataValue::Array2D(numeric_array_2d))
+                    Ok(NoDataValue::NumericArray2D(numeric_array_2d))
                 } else if string_array_1d.len() > 0 {
                     Ok(NoDataValue::String1D(string_array_1d))
                 } else {
@@ -196,6 +196,8 @@ impl<'de> serde::Deserialize<'de> for NoDataValue {
 #[derive(Debug, PartialEq)]
 pub enum AnyValue {
     Numeric(NumericValue),
+    NumericArray1D(NumericArray1D),
+    NumericArray2D(NumericArray2D),
     Boolean(bool),
     Boolean1D(Vec<bool>),
     String(String),
@@ -242,9 +244,13 @@ impl<'de> serde::Deserialize<'de> for AnyValue {
                     }
                 }
                 if numeric_array_1d.len() > 0 {
-                    Ok(AnyValue::Numeric(NumericValue::Array1D(numeric_array_1d)))
+                    Ok(AnyValue::Numeric(NumericValue::NumericArray1D(
+                        numeric_array_1d,
+                    )))
                 } else if numeric_array_2d.len() > 0 {
-                    Ok(AnyValue::Numeric(NumericValue::Array2D(numeric_array_2d)))
+                    Ok(AnyValue::Numeric(NumericValue::NumericArray2D(
+                        numeric_array_2d,
+                    )))
                 } else if boolean_array_1d.len() > 0 {
                     Ok(AnyValue::Boolean1D(boolean_array_1d))
                 } else if string_array_1d.len() > 0 {
@@ -283,6 +289,8 @@ impl serde::Serialize for AnyValue {
                 }
                 seq.end()
             }
+            AnyValue::NumericArray1D(value) => value.serialize(serializer),
+            AnyValue::NumericArray2D(value) => value.serialize(serializer),
         }
     }
 }
@@ -299,13 +307,16 @@ mod tests {
 
         let json = r#"[1.0, 2.0, 3.0]"#;
         let numeric_value: NumericValue = serde_json::from_str(json).unwrap();
-        assert_eq!(numeric_value, NumericValue::Array1D(vec![1.0, 2.0, 3.0]));
+        assert_eq!(
+            numeric_value,
+            NumericValue::NumericArray1D(vec![1.0, 2.0, 3.0])
+        );
 
         let json = r#"[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]"#;
         let numeric_value: NumericValue = serde_json::from_str(json).unwrap();
         assert_eq!(
             numeric_value,
-            NumericValue::Array2D(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]])
+            NumericValue::NumericArray2D(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]])
         );
     }
 
@@ -315,11 +326,12 @@ mod tests {
         let json = serde_json::to_string(&numeric_value).unwrap();
         assert_eq!(json, r#"1.0"#);
 
-        let numeric_value = NumericValue::Array1D(vec![1.0, 2.0, 3.0]);
+        let numeric_value = NumericValue::NumericArray1D(vec![1.0, 2.0, 3.0]);
         let json = serde_json::to_string(&numeric_value).unwrap();
         assert_eq!(json, r#"[1.0,2.0,3.0]"#);
 
-        let numeric_value = NumericValue::Array2D(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]);
+        let numeric_value =
+            NumericValue::NumericArray2D(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]);
         let json = serde_json::to_string(&numeric_value).unwrap();
         assert_eq!(json, r#"[[1.0,2.0,3.0],[4.0,5.0,6.0]]"#);
     }
@@ -338,7 +350,7 @@ mod tests {
         let no_data_value: NoDataValue = serde_json::from_str(json).unwrap();
         assert_eq!(
             no_data_value,
-            NoDataValue::Array2D(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]])
+            NoDataValue::NumericArray2D(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]])
         );
 
         let json = r#""test""#;
@@ -367,7 +379,8 @@ mod tests {
         let json = serde_json::to_string(&no_data_value).unwrap();
         assert_eq!(json, r#"[1.0,2.0,3.0]"#);
 
-        let no_data_value = NoDataValue::Array2D(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]);
+        let no_data_value =
+            NoDataValue::NumericArray2D(vec![vec![1.0, 2.0, 3.0], vec![4.0, 5.0, 6.0]]);
         let json = serde_json::to_string(&no_data_value).unwrap();
         assert_eq!(json, r#"[[1.0,2.0,3.0],[4.0,5.0,6.0]]"#);
 
@@ -394,14 +407,14 @@ mod tests {
         let any_value: AnyValue = serde_json::from_str(json).unwrap();
         assert_eq!(
             any_value,
-            AnyValue::Numeric(NumericValue::Array1D(vec![1.0, 2.0, 3.0]))
+            AnyValue::Numeric(NumericValue::NumericArray1D(vec![1.0, 2.0, 3.0]))
         );
 
         let json = r#"[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]"#;
         let any_value: AnyValue = serde_json::from_str(json).unwrap();
         assert_eq!(
             any_value,
-            AnyValue::Numeric(NumericValue::Array2D(vec![
+            AnyValue::Numeric(NumericValue::NumericArray2D(vec![
                 vec![1.0, 2.0, 3.0],
                 vec![4.0, 5.0, 6.0],
             ]))
@@ -437,11 +450,11 @@ mod tests {
         let json = serde_json::to_string(&any_value).unwrap();
         assert_eq!(json, r#"1.0"#);
 
-        let any_value = AnyValue::Numeric(NumericValue::Array1D(vec![1.0, 2.0, 3.0]));
+        let any_value = AnyValue::Numeric(NumericValue::NumericArray1D(vec![1.0, 2.0, 3.0]));
         let json = serde_json::to_string(&any_value).unwrap();
         assert_eq!(json, r#"[1.0,2.0,3.0]"#);
 
-        let any_value = AnyValue::Numeric(NumericValue::Array2D(vec![
+        let any_value = AnyValue::Numeric(NumericValue::NumericArray2D(vec![
             vec![1.0, 2.0, 3.0],
             vec![4.0, 5.0, 6.0],
         ]));
