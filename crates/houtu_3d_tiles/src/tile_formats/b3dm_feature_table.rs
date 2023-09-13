@@ -2,9 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use houtu_utility::ExtensibleObject;
 
-use crate::tile_formats::feature_table::{
-    GlobalPropertyCartesian3, GlobalPropertyInteger,
-};
+use crate::tile_formats::feature_table::{GlobalPropertyCartesian3, GlobalPropertyInteger};
 
 /// A set of Batched 3D Model semantics that contain additional information about features in a tile.
 #[derive(Debug, Serialize, Deserialize)]
@@ -24,8 +22,8 @@ impl ExtensibleObject for B3dmFeatureTable {
 
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
     use crate::tile_formats::feature_table::BinaryBodyOffset;
+    use serde_json::json;
 
     use super::*;
 

@@ -23,7 +23,6 @@ impl ExtensibleObject for PropertyTable {
     const TYPE_NAME: &'static str = "PropertyTable";
 }
 
-
 #[cfg(test)]
 mod tests {
     use serde_json::json;
@@ -31,22 +30,21 @@ mod tests {
     #[test]
     fn test_property_table() {
         let json = json!(
-            {
-                "name": "name",
-                "class": "class",
-                "count": 1,
-                "properties": {
-                "example_STRING" : {
-                            "values" : 7,
-                            "stringOffsets" : 8
-                          }
-                }
-            });
+        {
+            "name": "name",
+            "class": "class",
+            "count": 1,
+            "properties": {
+            "example_STRING" : {
+                        "values" : 7,
+                        "stringOffsets" : 8
+                      }
+            }
+        });
         let property_table: super::PropertyTable = serde_json::from_value(json).unwrap();
         assert_eq!(property_table.name, Some("name".to_owned()));
         assert_eq!(property_table.class, "class");
         assert_eq!(property_table.count, 1);
         assert_eq!(property_table.properties.unwrap().len(), 1);
-
     }
 }
