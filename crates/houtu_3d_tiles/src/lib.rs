@@ -21,6 +21,7 @@ pub mod property_table;
 pub mod property_table_property;
 pub mod schema;
 pub mod statistics;
+pub mod style;
 pub mod subtree;
 pub mod subtrees;
 pub mod template_uri;
