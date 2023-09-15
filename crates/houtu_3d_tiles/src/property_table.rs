@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
+use crate::common::RootProperty;
 use houtu_utility::ExtensibleObject;
 
 use crate::property_table_property::PropertyTableProperty;
@@ -9,6 +10,9 @@ use crate::property_table_property::PropertyTableProperty;
 /// Properties conforming to a class, organized as property values stored in binary columnar arrays.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PropertyTable {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
     /// The name of the property table, e.g. for display purposes.
     pub name: Option<String>,
     /// The class that property values conform to. The value shall be a class ID declared in the `classes` dictionary.
@@ -16,7 +20,7 @@ pub struct PropertyTable {
     /// The number of elements in each property array.
     pub count: u64,
     /// A dictionary, where each key corresponds to a property ID in the class' `properties` dictionary and each value is an object describing where property values are stored. Required properties shall be included in this dictionary.
-    pub properties: Option<HashMap<String, PropertyTableProperty>>,
+    pub properties: HashMap<String, PropertyTableProperty>,
 }
 
 impl ExtensibleObject for PropertyTable {
@@ -45,6 +49,6 @@ mod tests {
         assert_eq!(property_table.name, Some("name".to_owned()));
         assert_eq!(property_table.class, "class");
         assert_eq!(property_table.count, 1);
-        assert_eq!(property_table.properties.unwrap().len(), 1);
+        assert_eq!(property_table.properties.len(), 1);
     }
 }
