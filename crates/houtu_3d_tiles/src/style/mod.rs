@@ -2,28 +2,24 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::common::{Extension, Extras};
 use houtu_utility::ExtensibleObject;
-pub use meta::*;
 
-mod meta;
+use crate::common::RootProperty;
 
 /// A 3D Tiles style.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Style {
-    /// Dictionary object with extension-specific objects.
-    pub extensions: Option<Extension>,
-    /// Application-specific data.
-    pub extras: Option<Extras>,
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
     /// A dictionary object of `expression` strings mapped to a variable name key that may be referenced throughout the style. If an expression references a defined variable, it is replaced with the evaluated result of the corresponding expression.
     pub defines: Option<HashMap<String, Expression>>,
     /// A `boolean expression` or `conditions` property which determines if a feature should be shown.
-    pub show: Option<ShowProperty>,
+    pub show: Option<OneOfShow>,
     /// A `color expression` or `conditions` property which determines the color blended with the feature's intrinsic color.
-    pub color: Option<ColorProperty>,
+    pub color: Option<OneOfColor>,
     /// A `meta` object which determines the values of non-visual properties of the feature.
-    #[serde(flatten)]
-    pub meta: Option<HashMap<String, String>>,
+    pub meta: Option<StyleMeta>,
 }
 
 impl ExtensibleObject for Style {
@@ -39,27 +35,26 @@ pub type ColorExpression = String;
 /// A `boolean expression` or `conditions` property which determines if a feature should be shown.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
-pub enum ShowProperty {
-    Boolean(bool),
-    Expression(Expression),
+pub enum OneOfShow {
+    BooleanExpression(BooleanExpression),
     Conditions(Conditions),
 }
 
-impl Default for ShowProperty {
+impl Default for OneOfShow {
     fn default() -> Self {
-        Self::Boolean(true)
+        Self::BooleanExpression(BooleanExpression::Boolean(true))
     }
 }
 
 /// A `color expression` or `conditions` property which determines the color blended with the feature's intrinsic color.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
-pub enum ColorProperty {
+pub enum OneOfColor {
     Color(ColorExpression),
     Conditions(Conditions),
 }
 
-impl Default for ColorProperty {
+impl Default for OneOfColor {
     fn default() -> Self {
         Self::Color("#FFFFFF".to_owned())
     }
@@ -82,6 +77,14 @@ pub struct Conditions {
 
 /// An `expression` evaluated as the result of a condition being true. An array of two expressions. If the first expression is evaluated and the result is `true`, then the second expression is evaluated and returned as the result of the condition.
 pub type Condition = [Expression; 2];
+
+#[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct StyleMeta {
+    #[serde(flatten)]
+    pub root: RootProperty,
+    #[serde(flatten)]
+    pub defines: HashMap<String, Expression>,
+}
 
 #[cfg(test)]
 mod tests {
@@ -134,16 +137,19 @@ mod tests {
     }
 
     #[test]
-    fn test_show_properties() {
+    fn test_one_of_show() {
         let json = json!(true);
-        let show_properties: ShowProperty = serde_json::from_value(json).unwrap();
-        assert_eq!(show_properties, ShowProperty::Boolean(true));
-
-        let json = json!("true".to_string());
-        let show_properties: ShowProperty = serde_json::from_value(json).unwrap();
+        let show_properties: OneOfShow = serde_json::from_value(json).unwrap();
         assert_eq!(
             show_properties,
-            ShowProperty::Expression("true".to_string())
+            OneOfShow::BooleanExpression(BooleanExpression::Boolean(true))
+        );
+
+        let json = json!("true".to_string());
+        let show_properties: OneOfShow = serde_json::from_value(json).unwrap();
+        assert_eq!(
+            show_properties,
+            OneOfShow::BooleanExpression(BooleanExpression::Expression("true".to_string()))
         );
 
         let json = json!(
@@ -156,23 +162,26 @@ mod tests {
                 ]
             }
         );
-        let show_properties: ShowProperty = serde_json::from_value(json).unwrap();
+        let show_properties: OneOfShow = serde_json::from_value(json).unwrap();
         assert_eq!(
             show_properties,
-            ShowProperty::Conditions(Conditions {
+            OneOfShow::Conditions(Conditions {
                 conditions: Some(vec![["true".to_owned(), "true".to_owned()]]),
             })
         );
 
-        let show_property = ShowProperty::default();
-        assert_eq!(show_property, ShowProperty::Boolean(true));
+        let show_property = OneOfShow::default();
+        assert_eq!(
+            show_property,
+            OneOfShow::BooleanExpression(BooleanExpression::Boolean(true))
+        );
     }
 
     #[test]
     fn test_color_property() {
         let json = json!("#FFFFFF");
-        let color_property: ColorProperty = serde_json::from_value(json).unwrap();
-        assert_eq!(color_property, ColorProperty::Color("#FFFFFF".to_owned()));
+        let color_property: OneOfColor = serde_json::from_value(json).unwrap();
+        assert_eq!(color_property, OneOfColor::Color("#FFFFFF".to_owned()));
 
         let json = json!(
             {
@@ -184,16 +193,40 @@ mod tests {
                 ]
             }
         );
-        let color_property: ColorProperty = serde_json::from_value(json).unwrap();
+        let color_property: OneOfColor = serde_json::from_value(json).unwrap();
         assert_eq!(
             color_property,
-            ColorProperty::Conditions(Conditions {
+            OneOfColor::Conditions(Conditions {
                 conditions: Some(vec![["true".to_owned(), "true".to_owned()]]),
             })
         );
 
-        let color_property = ColorProperty::default();
-        assert_eq!(color_property, ColorProperty::Color("#FFFFFF".to_owned()));
+        let color_property = OneOfColor::default();
+        assert_eq!(color_property, OneOfColor::Color("#FFFFFF".to_owned()));
+    }
+
+    #[test]
+    fn test_meta() {
+        let json = json!(
+            {
+                    "extensions": {
+                        "EXTENSION_NAME": {
+                            "property": "value"
+                        }
+                    },
+                    "extras": {
+                        "property": "value"
+                    },
+                    "property": "value"
+            }
+        );
+        let meta: StyleMeta = serde_json::from_value(json).unwrap();
+        assert_eq!(
+            meta.root.extensions.unwrap()["EXTENSION_NAME"]["property"],
+            "value"
+        );
+        assert_eq!(meta.root.extras.unwrap()["property"], "value");
+        assert_eq!(meta.defines["property"], "value");
     }
 
     #[test]
@@ -213,31 +246,37 @@ mod tests {
                 },
                 "show": true,
                 "color": "#FFFFFF",
-                "property": "value"
+                "meta": {
+                    "property": "value"
+                }
+
             }
         );
         let style: Style = serde_json::from_value(json).unwrap();
-
+        let root = style.root;
         assert_eq!(
-            style.extensions.unwrap()["EXTENSION_NAME"]["property"],
+            root.extensions.unwrap()["EXTENSION_NAME"]["property"],
             "value"
         );
-        assert_eq!(style.extras.unwrap()["property"], "value");
+        assert_eq!(root.extras.unwrap()["property"], "value");
         assert_eq!(style.defines.unwrap()["example"], "true");
-        assert_eq!(style.show.unwrap(), ShowProperty::Boolean(true));
+        assert_eq!(
+            style.show.unwrap(),
+            OneOfShow::BooleanExpression(BooleanExpression::Boolean(true))
+        );
         assert_eq!(
             style.color.unwrap(),
-            ColorProperty::Color("#FFFFFF".to_owned())
+            OneOfColor::Color("#FFFFFF".to_owned())
         );
-        assert_eq!(style.meta.unwrap()["property"], "value");
+
+        assert_eq!(style.meta.unwrap().defines["property"], "value");
 
         let json = json!({});
         let style: Style = serde_json::from_value(json).unwrap();
-        assert_eq!(style.extensions, None);
-        assert_eq!(style.extras, None);
+        assert_eq!(style.root, RootProperty::default());
         assert_eq!(style.defines, None);
         assert_eq!(style.show, None);
         assert_eq!(style.color, None);
-        assert_eq!(style.meta, Some(HashMap::new()));
+        assert_eq!(style.meta, None);
     }
 }

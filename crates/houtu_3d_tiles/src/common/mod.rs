@@ -8,7 +8,8 @@ pub type Extras = serde_json::Value;
 /// Dictionary object with extension-specific objects.
 pub type Extension = serde_json::Map<String, serde_json::Value>;
 /// A basis for storing extensions and extras.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RootProperty {
     /// Dictionary object with extension-specific objects.
     pub extensions: Option<Extension>,
