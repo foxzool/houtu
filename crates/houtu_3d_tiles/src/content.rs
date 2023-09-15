@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use houtu_utility::ExtensibleObject;
-
 use crate::bounding_volume::BoundingVolume;
 use crate::metadata_entity::MetaDataEntity;
 
@@ -20,8 +18,4 @@ pub struct Content {
     /// The group this content belongs to.
     /// The value is an index into the array of `groups` that is defined for the containing tileset.
     pub group: Option<i64>,
-}
-
-impl ExtensibleObject for Content {
-    const TYPE_NAME: &'static str = "Content";
 }

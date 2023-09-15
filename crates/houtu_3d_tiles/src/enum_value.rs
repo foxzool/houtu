@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 use crate::common::RootProperty;
-use houtu_utility::ExtensibleObject;
 
 /// An enum value.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -15,10 +14,6 @@ pub struct EnumValue {
     pub description: Option<String>,
     /// The integer enum value.
     pub value: i64,
-}
-
-impl ExtensibleObject for EnumValue {
-    const TYPE_NAME: &'static str = "EnumValue";
 }
 
 #[cfg(test)]

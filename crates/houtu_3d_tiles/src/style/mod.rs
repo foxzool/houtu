@@ -2,8 +2,6 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use houtu_utility::ExtensibleObject;
-
 use crate::common::RootProperty;
 
 /// A 3D Tiles style.
@@ -20,10 +18,6 @@ pub struct Style {
     pub color: Option<OneOfColor>,
     /// A `meta` object which determines the values of non-visual properties of the feature.
     pub meta: Option<StyleMeta>,
-}
-
-impl ExtensibleObject for Style {
-    const TYPE_NAME: &'static str = "Style";
 }
 
 /// A valid 3D Tiles style expression. Details are described in the 3D Tiles Styling specification.

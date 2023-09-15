@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::definitions::{AnyValue, NoDataValue, NumericValue};
 use crate::common::RootProperty;
-use houtu_utility::ExtensibleObject;
 
 /// A single property of a metadata class.
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
@@ -74,10 +73,6 @@ pub struct ClassProperty {
     /// An identifier that describes how this property should be interpreted.
     /// The semantic cannot be used by other properties in the class.
     pub semantic: Option<String>,
-}
-
-impl ExtensibleObject for ClassProperty {
-    const TYPE_NAME: &'static str = "ClassProperty";
 }
 
 /// The element type.

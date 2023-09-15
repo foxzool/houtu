@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::RootProperty;
 use crate::enum_value::EnumValue;
-use houtu_utility::ExtensibleObject;
 
 /// An object defining the values of an enum.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
@@ -19,10 +18,6 @@ pub struct Enum {
     pub value_type: Option<ValueType>,
     /// An array of enum values. Duplicate names or duplicate integer values are not allowed.
     pub values: Vec<EnumValue>,
-}
-
-impl ExtensibleObject for Enum {
-    const TYPE_NAME: &'static str = "Enum";
 }
 
 impl Default for Enum {

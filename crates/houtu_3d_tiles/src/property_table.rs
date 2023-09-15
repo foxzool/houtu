@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use crate::common::RootProperty;
-use houtu_utility::ExtensibleObject;
 
 use crate::property_table_property::PropertyTableProperty;
 
@@ -21,10 +20,6 @@ pub struct PropertyTable {
     pub count: u64,
     /// A dictionary, where each key corresponds to a property ID in the class' `properties` dictionary and each value is an object describing where property values are stored. Required properties shall be included in this dictionary.
     pub properties: HashMap<String, PropertyTableProperty>,
-}
-
-impl ExtensibleObject for PropertyTable {
-    const TYPE_NAME: &'static str = "PropertyTable";
 }
 
 #[cfg(test)]

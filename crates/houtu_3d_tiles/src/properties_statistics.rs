@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::definitions::NumericValue;
 use crate::common::RootProperty;
-use houtu_utility::ExtensibleObject;
 
 /// Statistics about property values.
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
@@ -46,10 +45,6 @@ pub struct PropertyStatistics {
     pub sum: Option<NumericValue>,
     /// A dictionary, where each key corresponds to an enum `name` and each value is the number of occurrences of that enum. Only applicable when `type` is `ENUM`. For fixed-length arrays, this is an array of component-wise occurrences.
     pub occurrences: Option<HashMap<String, OccurrencesValue>>,
-}
-
-impl ExtensibleObject for PropertyStatistics {
-    const TYPE_NAME: &'static str = "PropertyStatistics";
 }
 
 #[derive(Debug, PartialEq)]

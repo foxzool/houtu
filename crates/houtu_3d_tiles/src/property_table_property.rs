@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 
 use crate::common::RootProperty;
-use houtu_utility::ExtensibleObject;
 
 /// An array of binary property values.
 /// This represents one column of a property table, and contains one value of a certain property for each metadata entity.
@@ -111,10 +110,6 @@ impl serde::Serialize for StringOffsetType {
             StringOffsetType::Other(value) => serializer.serialize_str(value),
         }
     }
-}
-
-impl ExtensibleObject for PropertyTableProperty {
-    const TYPE_NAME: &'static str = "PropertyTableProperty";
 }
 
 #[cfg(test)]

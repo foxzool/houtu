@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use houtu_utility::ExtensibleObject;
-
 /// A set of Batched 3D Model semantics that contain additional information about features in a tile.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct B3dmFeatureTable {
@@ -13,8 +11,4 @@ pub struct B3dmFeatureTable {
     /// Details about this property are described in the 3D Tiles specification.
     #[serde(rename = "RTC_CENTER")]
     pub rtc_center: Option<[f64; 3]>,
-}
-
-impl ExtensibleObject for B3dmFeatureTable {
-    const TYPE_NAME: &'static str = "B3dmFeatureTable";
 }

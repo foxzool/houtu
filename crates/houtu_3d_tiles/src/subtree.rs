@@ -1,4 +1,3 @@
-use houtu_utility::ExtensibleObject;
 use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::common::RootProperty;
@@ -33,10 +32,6 @@ pub struct Subtree {
     pub subtree_metadata: Option<MetaDataEntity>,
 }
 
-impl ExtensibleObject for Subtree {
-    const TYPE_NAME: &'static str = "Subtree";
-}
-
 /// A buffer is a binary blob. It is either the binary chunk of the subtree file, or an external buffer referenced by a URI.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -50,10 +45,6 @@ pub struct Buffer {
     pub byte_length: i64,
     /// The name of the buffer.
     pub name: Option<String>,
-}
-
-impl ExtensibleObject for Buffer {
-    const TYPE_NAME: &'static str = "Buffer";
 }
 
 /// A contiguous subset of a buffer
@@ -73,10 +64,6 @@ pub struct BufferView {
     pub name: Option<String>,
 }
 
-impl ExtensibleObject for BufferView {
-    const TYPE_NAME: &'static str = "BufferView";
-}
-
 /// An object describing the availability of a set of elements.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -91,10 +78,6 @@ pub struct Availability {
     /// Integer indicating whether all of the elements are available (1) or all are unavailable (0).
     #[serde(deserialize_with = "deserialize_option_bool_from_anything")]
     pub constant: Option<bool>,
-}
-
-impl ExtensibleObject for Availability {
-    const TYPE_NAME: &'static str = "Availability";
 }
 
 pub fn deserialize_option_bool_from_anything<'de, D>(

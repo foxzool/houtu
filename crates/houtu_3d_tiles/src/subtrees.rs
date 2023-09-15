@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use houtu_utility::ExtensibleObject;
-
 use crate::template_uri::TemplateUri;
 
 /// An object describing the location of subtree files.
@@ -13,8 +11,4 @@ pub struct Subtrees {
     /// For subdivision scheme `OCTREE`, z shall also be given.
     /// Relative paths are relative to the tileset JSON.
     pub uri: TemplateUri,
-}
-
-impl ExtensibleObject for Subtrees {
-    const TYPE_NAME: &'static str = "Subtrees";
 }

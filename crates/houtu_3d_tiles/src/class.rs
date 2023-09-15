@@ -1,6 +1,6 @@
 use crate::class_property::ClassProperty;
 use crate::common::RootProperty;
-use houtu_utility::ExtensibleObject;
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -16,10 +16,6 @@ pub struct Class {
     pub description: Option<String>,
     /// A dictionary, where each key is a property ID and each value is an object defining the property. Property IDs shall be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`.
     pub properties: Option<HashMap<String, ClassProperty>>,
-}
-
-impl ExtensibleObject for Class {
-    const TYPE_NAME: &'static str = "Class";
 }
 
 #[cfg(test)]

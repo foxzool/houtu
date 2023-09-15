@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use houtu_utility::ExtensibleObject;
-
 use crate::tile_formats::feature_table::{GlobalPropertyCartesian3, GlobalPropertyInteger};
 
 /// A set of Batched 3D Model semantics that contain additional information about features in a tile.
@@ -14,10 +12,6 @@ pub struct B3dmFeatureTable {
     /// A GlobalPropertyCartesian3 object defining a 3-component numeric property for all features.
     /// Details about this property are described in the 3D Tiles specification.
     pub rtc_center: Option<GlobalPropertyCartesian3>,
-}
-
-impl ExtensibleObject for B3dmFeatureTable {
-    const TYPE_NAME: &'static str = "B3dmFeatureTable";
 }
 
 #[cfg(test)]

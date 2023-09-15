@@ -2,8 +2,6 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use houtu_utility::ExtensibleObject;
-
 /// An object containing metadata about a group.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GroupMetadata {
@@ -18,8 +16,4 @@ pub struct GroupMetadata {
     /// For `ARRAY`, `VECN`, and `MATN` types use a JSON array containing values matching the `componentType`.
     /// Required properties shall be included in this dictionary.
     pub properties: HashMap<String, serde_json::Value>,
-}
-
-impl ExtensibleObject for GroupMetadata {
-    const TYPE_NAME: &'static str = "GroupMetadata";
 }

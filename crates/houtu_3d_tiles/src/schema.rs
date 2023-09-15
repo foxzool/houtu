@@ -2,8 +2,6 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use houtu_utility::ExtensibleObject;
-
 use crate::class::Class;
 use crate::common::RootProperty;
 use crate::enum_::Enum;
@@ -27,10 +25,6 @@ pub struct Schema {
     pub classes: Option<HashMap<String, Class>>,
     /// A dictionary, where each key is an enum ID and each value is an object defining the values for the enum. Enum IDs shall be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`.
     pub enums: Option<HashMap<String, Enum>>,
-}
-
-impl ExtensibleObject for Schema {
-    const TYPE_NAME: &'static str = "Schema";
 }
 
 #[cfg(test)]

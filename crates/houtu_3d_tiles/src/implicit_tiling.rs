@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-use houtu_utility::ExtensibleObject;
-
 use crate::subtrees::Subtrees;
 
 /// This object allows a tile to be implicitly subdivided.
@@ -20,10 +18,6 @@ pub struct ImplicitTiling {
     pub available_levels: i64,
     /// An object describing the location of subtree files.
     pub subtrees: Subtrees,
-}
-
-impl ExtensibleObject for ImplicitTiling {
-    const TYPE_NAME: &'static str = "ImplicitTiling";
 }
 
 #[derive(Debug)]

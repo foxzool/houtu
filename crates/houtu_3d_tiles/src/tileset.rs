@@ -2,8 +2,6 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use houtu_utility::ExtensibleObject;
-
 use crate::asset::Asset;
 use crate::group::Group;
 use crate::metadata_entity::MetaDataEntity;
@@ -38,8 +36,4 @@ pub struct Tileset {
     /// Names of 3D Tiles extensions required to properly load this tileset. Each element of this array shall also be contained in `extensionsUsed`.
     #[serde(rename = "extensionsRequired")]
     pub extensions_required: Option<Vec<String>>,
-}
-
-impl ExtensibleObject for Tileset {
-    const TYPE_NAME: &'static str = "Tileset";
 }
