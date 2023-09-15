@@ -40,7 +40,10 @@ mod tests {
         let batch_length: GlobalPropertyInteger = serde_json::from_value(json).unwrap();
         assert_eq!(
             batch_length,
-            GlobalPropertyInteger::BinaryBodyOffset(BinaryBodyOffset { byte_offset: 1 })
+            GlobalPropertyInteger::BinaryBodyOffset(BinaryBodyOffset {
+                root: Default::default(),
+                byte_offset: 1
+            })
         );
     }
 
@@ -102,7 +105,10 @@ mod tests {
         assert_eq!(
             b3dm_feature_table.rtc_center,
             Some(GlobalPropertyCartesian3::BinaryBodyOffset(
-                BinaryBodyOffset { byte_offset: 1 }
+                BinaryBodyOffset {
+                    root: Default::default(),
+                    byte_offset: 1
+                }
             ))
         )
     }

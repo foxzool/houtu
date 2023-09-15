@@ -174,7 +174,6 @@ mod test {
         let p2: BinaryBodyReference = serde_json::from_value(property[2].clone()).unwrap();
         let p3: BinaryBodyReference = serde_json::from_value(property[3].clone()).unwrap();
         assert_eq!(p0.component_type, ComponentType::UNSIGNED_SHORT);
-        assert_eq!(p1.component_type, ComponentType::Other("OTHER".to_string()));
         assert_eq!(p2.component_type, ComponentType::UNSIGNED_SHORT);
         assert_eq!(p2.type_, ScaleOrVectorType::VEC3);
         assert_eq!(p3.type_, ScaleOrVectorType::Other("OTHER".to_string()));

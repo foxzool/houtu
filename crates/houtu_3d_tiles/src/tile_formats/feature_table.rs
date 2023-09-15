@@ -1,24 +1,46 @@
+use crate::common::RootProperty;
 use serde::{Deserialize, Serialize};
+use strum_macros::EnumString;
 
-/// An object defining the offset into a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
+pub struct FeatureTable {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
+    pub binary_body_offset: Option<BinaryBodyOffset>,
+    pub binary_body_reference: Option<BinaryBodyReference>,
+}
+
+/// An object defining the offset into a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct BinaryBodyOffset {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
+    /// The offset into the buffer in bytes.
     pub byte_offset: u64,
 }
 
 /// An object defining the reference to a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct BinaryBodyReference {
+    #[serde(flatten)]
+    pub root: RootProperty,
+    /// The offset into the buffer in bytes.
+    pub byte_offset: u64,
     /// The datatype of components in the property. This is defined only if the semantic allows for overriding the implicit component type. These cases are specified in each tile format.
     pub component_type: ComponentType,
 }
 
 /// The datatype of components in the property. This is defined only if the semantic allows for overriding the implicit component type. These cases are specified in each tile format.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, EnumString)]
 #[allow(non_camel_case_types)]
 pub enum ComponentType {
+    #[default]
     BYTE,
     UNSIGNED_BYTE,
     SHORT,
@@ -27,46 +49,6 @@ pub enum ComponentType {
     UNSIGNED_INT,
     FLOAT,
     DOUBLE,
-    Other(String),
-}
-
-impl<'de> serde::Deserialize<'de> for ComponentType {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = String::deserialize(deserializer)?;
-        match value.as_str() {
-            "BYTE" => Ok(ComponentType::BYTE),
-            "UNSIGNED_BYTE" => Ok(ComponentType::UNSIGNED_BYTE),
-            "SHORT" => Ok(ComponentType::SHORT),
-            "UNSIGNED_SHORT" => Ok(ComponentType::UNSIGNED_SHORT),
-            "INT" => Ok(ComponentType::INT),
-            "UNSIGNED_INT" => Ok(ComponentType::UNSIGNED_INT),
-            "FLOAT" => Ok(ComponentType::FLOAT),
-            "DOUBLE" => Ok(ComponentType::DOUBLE),
-            _ => Ok(ComponentType::Other(value)),
-        }
-    }
-}
-
-impl serde::Serialize for ComponentType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            ComponentType::BYTE => serializer.serialize_str("BYTE"),
-            ComponentType::UNSIGNED_BYTE => serializer.serialize_str("UNSIGNED_BYTE"),
-            ComponentType::SHORT => serializer.serialize_str("SHORT"),
-            ComponentType::UNSIGNED_SHORT => serializer.serialize_str("UNSIGNED_SHORT"),
-            ComponentType::INT => serializer.serialize_str("INT"),
-            ComponentType::UNSIGNED_INT => serializer.serialize_str("UNSIGNED_INT"),
-            ComponentType::FLOAT => serializer.serialize_str("FLOAT"),
-            ComponentType::DOUBLE => serializer.serialize_str("DOUBLE"),
-            ComponentType::Other(value) => serializer.serialize_str(value),
-        }
-    }
 }
 
 #[derive(Debug, Serialize, PartialEq)]
@@ -195,8 +177,9 @@ impl<'de> Deserialize<'de> for GlobalPropertyCartesian4 {
 pub type GlobalPropertyBoolean = bool;
 
 /// A user-defined property which specifies application-specific metadata in a tile. Values can refer to sections in the binary body with a `BinaryBodyReference` object. Global values can be also be defined directly in the JSON.
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
+#[serde(untagged)]
 pub enum Property {
     /// An object defining the offset into a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.    
     Offset(BinaryBodyOffset),
@@ -214,76 +197,13 @@ pub enum Property {
     GlobalPropertyCartesian4([f64; 4]),
 }
 
-impl<'de> serde::Deserialize<'de> for Property {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = serde_json::Value::deserialize(deserializer)?;
-
-        match value {
-            serde_json::Value::Bool(value) => Ok(Property::Boolean(value)),
-            serde_json::Value::Number(value) => {
-                if let Some(value) = value.as_i64() {
-                    Ok(Property::Integer(value))
-                } else if let Some(value) = value.as_f64() {
-                    Ok(Property::GlobalPropertyNumber(value))
-                } else {
-                    Err(serde::de::Error::custom("Invalid number"))
-                }
-            }
-            serde_json::Value::Array(value) => {
-                if value.len() == 3 {
-                    let mut array = [0.0; 3];
-                    for (i, v) in value.iter().enumerate() {
-                        if let Some(v) = v.as_f64() {
-                            array[i] = v;
-                        } else {
-                            return Err(serde::de::Error::custom("Invalid array"));
-                        }
-                    }
-                    Ok(Property::GlobalPropertyCartesian3(array))
-                } else if value.len() == 4 {
-                    let mut array = [0.0; 4];
-                    for (i, v) in value.iter().enumerate() {
-                        if let Some(v) = v.as_f64() {
-                            array[i] = v;
-                        } else {
-                            return Err(serde::de::Error::custom("Invalid array"));
-                        }
-                    }
-                    Ok(Property::GlobalPropertyCartesian4(array))
-                } else {
-                    Err(serde::de::Error::custom("Invalid array"))
-                }
-            }
-            serde_json::Value::Object(value) => {
-                if let Some(value) = value.get("byteOffset") {
-                    let byte_offset = value
-                        .as_u64()
-                        .ok_or_else(|| serde::de::Error::custom("Invalid byteOffset"))?;
-                    Ok(Property::Offset(BinaryBodyOffset { byte_offset }))
-                } else if let Some(value) = value.get("componentType") {
-                    let component_type =
-                        serde_json::from_value(serde_json::to_value(value).unwrap())
-                            .map_err(|_| serde::de::Error::custom("Invalid componentType"))?;
-                    Ok(Property::Reference(BinaryBodyReference { component_type }))
-                } else {
-                    Err(serde::de::Error::custom("Invalid object"))
-                }
-            }
-
-            _ => Err(serde::de::Error::custom("Invalid json body")),
-        }
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
+    use serde_json::json;
 
     #[test]
-    fn test_property() {
+    fn test_property_byte_offset() {
         let json = r#"
         {
             "byteOffset": 10
@@ -292,19 +212,25 @@ mod test {
         let property: Property = serde_json::from_value(json_value).unwrap();
         assert_eq!(
             property,
-            Property::Offset(BinaryBodyOffset { byte_offset: 10 })
+            Property::Offset(BinaryBodyOffset {
+                byte_offset: 10,
+                ..Default::default()
+            })
         );
+    }
 
-        let json = r#"
+    #[test]
+    fn test_property_binary_ref() {
+        let json = json!(
         {
             "componentType": "INT"
-        }"#;
-        let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
-        let property: Property = serde_json::from_value(json_value).unwrap();
+        });
+        let property: Property = serde_json::from_value(json).unwrap();
         assert_eq!(
             property,
             Property::Reference(BinaryBodyReference {
-                component_type: ComponentType::INT
+                component_type: ComponentType::INT,
+                ..Default::default()
             })
         );
 
@@ -313,14 +239,11 @@ mod test {
             "componentType": "OTHER"
         }"#;
         let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
-        let property: Property = serde_json::from_value(json_value).unwrap();
-        assert_eq!(
-            property,
-            Property::Reference(BinaryBodyReference {
-                component_type: ComponentType::Other("OTHER".to_string())
-            })
-        );
+        assert!(serde_json::from_value::<Property>(json_value).is_err());
+    }
 
+    #[test]
+    fn test_property() {
         let json = r#"true"#;
         let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
         let property: Property = serde_json::from_value(json_value).unwrap();

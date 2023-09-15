@@ -90,55 +90,64 @@ mod tests {
         assert_eq!(
             i3dm_feature_table.position,
             Some(BinaryBodyReference {
-                component_type: ComponentType::BYTE
+                component_type: ComponentType::BYTE,
+                ..Default::default()
             })
         );
         assert_eq!(
             i3dm_feature_table.position_quantized,
             Some(BinaryBodyReference {
-                component_type: ComponentType::UNSIGNED_SHORT
+                component_type: ComponentType::UNSIGNED_SHORT,
+                ..Default::default()
             })
         );
         assert_eq!(
             i3dm_feature_table.normal_up,
             Some(BinaryBodyReference {
-                component_type: ComponentType::FLOAT
+                component_type: ComponentType::FLOAT,
+                ..Default::default()
             })
         );
         assert_eq!(
             i3dm_feature_table.normal_right,
             Some(BinaryBodyReference {
-                component_type: ComponentType::FLOAT
+                component_type: ComponentType::FLOAT,
+                ..Default::default()
             })
         );
         assert_eq!(
             i3dm_feature_table.normal_up_oct32p,
             Some(BinaryBodyReference {
-                component_type: ComponentType::UNSIGNED_BYTE
+                component_type: ComponentType::UNSIGNED_BYTE,
+                ..Default::default()
             })
         );
         assert_eq!(
             i3dm_feature_table.normal_right_oct32p,
             Some(BinaryBodyReference {
-                component_type: ComponentType::UNSIGNED_BYTE
+                component_type: ComponentType::UNSIGNED_BYTE,
+                ..Default::default()
             })
         );
         assert_eq!(
             i3dm_feature_table.scale,
             Some(BinaryBodyReference {
-                component_type: ComponentType::FLOAT
+                component_type: ComponentType::FLOAT,
+                ..Default::default()
             })
         );
         assert_eq!(
             i3dm_feature_table.scale_non_uniform,
             Some(BinaryBodyReference {
-                component_type: ComponentType::FLOAT
+                component_type: ComponentType::FLOAT,
+                ..Default::default()
             })
         );
         assert_eq!(
             i3dm_feature_table.batch_id,
             Some(BinaryBodyReference {
-                component_type: ComponentType::UNSIGNED_SHORT
+                component_type: ComponentType::UNSIGNED_SHORT,
+                ..Default::default()
             })
         );
         assert_eq!(

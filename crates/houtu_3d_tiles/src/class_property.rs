@@ -136,7 +136,7 @@ impl serde::Serialize for ElementType {
 }
 
 /// The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types.
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Default, PartialEq)]
 pub enum ComponentType {
     #[default]
     INT8,
@@ -149,50 +149,6 @@ pub enum ComponentType {
     UINT64,
     FLOAT32,
     FLOAT64,
-    Other(String),
-}
-
-impl<'de> serde::Deserialize<'de> for ComponentType {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = String::deserialize(deserializer)?;
-        match value.as_str() {
-            "INT8" => Ok(ComponentType::INT8),
-            "UINT8" => Ok(ComponentType::UINT8),
-            "INT16" => Ok(ComponentType::INT16),
-            "UINT16" => Ok(ComponentType::UINT16),
-            "INT32" => Ok(ComponentType::INT32),
-            "UINT32" => Ok(ComponentType::UINT32),
-            "INT64" => Ok(ComponentType::INT64),
-            "UINT64" => Ok(ComponentType::UINT64),
-            "FLOAT32" => Ok(ComponentType::FLOAT32),
-            "FLOAT64" => Ok(ComponentType::FLOAT64),
-            _ => Ok(ComponentType::Other(value)),
-        }
-    }
-}
-
-impl serde::Serialize for ComponentType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            ComponentType::INT8 => serializer.serialize_str("INT8"),
-            ComponentType::UINT8 => serializer.serialize_str("UINT8"),
-            ComponentType::INT16 => serializer.serialize_str("INT16"),
-            ComponentType::UINT16 => serializer.serialize_str("UINT16"),
-            ComponentType::INT32 => serializer.serialize_str("INT32"),
-            ComponentType::UINT32 => serializer.serialize_str("UINT32"),
-            ComponentType::INT64 => serializer.serialize_str("INT64"),
-            ComponentType::UINT64 => serializer.serialize_str("UINT64"),
-            ComponentType::FLOAT32 => serializer.serialize_str("FLOAT32"),
-            ComponentType::FLOAT64 => serializer.serialize_str("FLOAT64"),
-            ComponentType::Other(value) => serializer.serialize_str(value),
-        }
-    }
 }
 
 #[cfg(test)]
@@ -293,8 +249,7 @@ mod tests {
         assert_eq!(component_type, ComponentType::FLOAT64);
 
         let json = json!("Other");
-        let component_type: ComponentType = serde_json::from_value(json).unwrap();
-        assert_eq!(component_type, ComponentType::Other("Other".to_owned()));
+        assert!(serde_json::from_value::<ComponentType>(json).is_err())
     }
 
     #[test]

@@ -88,48 +88,56 @@ mod tests {
             pnts_feature_table.position,
             Some(BinaryBodyReference {
                 component_type: ComponentType::BYTE,
+                ..Default::default()
             })
         );
         assert_eq!(
             pnts_feature_table.position_quantized,
             Some(BinaryBodyReference {
                 component_type: ComponentType::UNSIGNED_SHORT,
+                ..Default::default()
             })
         );
         assert_eq!(
             pnts_feature_table.rgba,
             Some(BinaryBodyReference {
                 component_type: ComponentType::UNSIGNED_BYTE,
+                ..Default::default()
             })
         );
         assert_eq!(
             pnts_feature_table.rgb,
             Some(BinaryBodyReference {
                 component_type: ComponentType::UNSIGNED_BYTE,
+                ..Default::default()
             })
         );
         assert_eq!(
             pnts_feature_table.rgb565,
             Some(BinaryBodyReference {
                 component_type: ComponentType::UNSIGNED_BYTE,
+                ..Default::default()
             })
         );
         assert_eq!(
             pnts_feature_table.normal,
             Some(BinaryBodyReference {
                 component_type: ComponentType::FLOAT,
+                ..Default::default()
             })
         );
         assert_eq!(
             pnts_feature_table.normal_oct16p,
             Some(BinaryBodyReference {
                 component_type: ComponentType::UNSIGNED_BYTE,
+                ..Default::default()
             })
         );
         assert_eq!(
             pnts_feature_table.batch_id,
             Some(BinaryBodyReference {
                 component_type: ComponentType::UNSIGNED_SHORT,
+                ..Default::default()
             })
         );
         assert_eq!(

@@ -1,6 +1,4 @@
 pub mod asset;
-pub mod availability;
-pub mod b3dm;
 pub mod bounding_volume;
 pub mod class;
 pub mod class_property;
