@@ -1,11 +1,15 @@
 use serde::{Deserialize, Serialize};
 
+use crate::common::RootProperty;
 use crate::enum_value::EnumValue;
 use houtu_utility::ExtensibleObject;
 
 /// An object defining the values of an enum.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Enum {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
     /// The name of the enum, e.g. for display purposes.
     pub name: Option<String>,
     /// The description of the enum.
@@ -24,6 +28,7 @@ impl ExtensibleObject for Enum {
 impl Default for Enum {
     fn default() -> Self {
         Self {
+            root: Default::default(),
             name: None,
             description: None,
             value_type: Some(ValueType::UINT16),

@@ -7,7 +7,7 @@ use houtu_utility::ExtensibleObject;
 use crate::common::RootProperty;
 
 /// A 3D Tiles style.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Style {
     /// A basis for storing extensions and extras.
     #[serde(flatten)]

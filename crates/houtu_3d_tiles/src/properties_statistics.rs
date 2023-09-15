@@ -4,11 +4,15 @@ use serde::ser::SerializeSeq;
 use serde::{Deserialize, Serialize};
 
 use crate::common::definitions::NumericValue;
+use crate::common::RootProperty;
 use houtu_utility::ExtensibleObject;
 
 /// Statistics about property values.
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct PropertyStatistics {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
     /// The minimum property value occurring in the tileset.
     /// Only applicable to `SCALAR`, `VECN`, and `MATN` types.
     /// This is the minimum of all property values,

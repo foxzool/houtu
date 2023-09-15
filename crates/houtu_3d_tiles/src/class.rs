@@ -1,4 +1,5 @@
 use crate::class_property::ClassProperty;
+use crate::common::RootProperty;
 use houtu_utility::ExtensibleObject;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -6,6 +7,9 @@ use std::collections::HashMap;
 /// A class containing a set of properties.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Class {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
     /// The name of the class, e.g. for display purposes.
     pub name: Option<String>,
     /// The description of the class.

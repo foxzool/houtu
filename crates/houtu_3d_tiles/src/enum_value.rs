@@ -1,10 +1,14 @@
 use serde::{Deserialize, Serialize};
 
+use crate::common::RootProperty;
 use houtu_utility::ExtensibleObject;
 
 /// An enum value.
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct EnumValue {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
     /// The name of the enum value.
     pub name: String,
     /// The description of the enum value.

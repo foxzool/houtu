@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
+use crate::common::RootProperty;
 use houtu_utility::ExtensibleObject;
 
 use crate::properties_statistics::PropertyStatistics;
@@ -9,6 +10,9 @@ use crate::properties_statistics::PropertyStatistics;
 /// Statistics about entities that conform to a class.
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ClassStatistics {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
     /// The number of entities that conform to the class.
     pub count: u64,
     /// A dictionary, where each key corresponds to a property ID in the class’ properties dictionary and each value is an object containing statistics about property values.

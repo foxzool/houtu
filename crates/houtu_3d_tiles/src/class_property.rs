@@ -1,11 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 use crate::common::definitions::{AnyValue, NoDataValue, NumericValue};
+use crate::common::RootProperty;
 use houtu_utility::ExtensibleObject;
 
 /// A single property of a metadata class.
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct ClassProperty {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
     /// The name of the property, e.g. for display purposes.
     pub name: Option<String>,
     /// The description of the property.

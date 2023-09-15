@@ -1,10 +1,12 @@
-use crate::style::{Conditions, NumberExpression};
+use crate::style::{Conditions, NumberExpression, Style};
 use serde::{Deserialize, Serialize};
 
 /// A 3D Tiles style with additional properties for Point Clouds.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PointCloudStyle {
+    #[serde(flatten)]
+    pub style: Style,
     /// A `number expression` or `conditions` property which determines the size of the points in pixels.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub point_size: Option<OneOfPointSize>,
@@ -57,9 +59,16 @@ mod tests {
         let point_cloud_style: PointCloudStyle = serde_json::from_value(json).unwrap();
         assert_eq!(point_cloud_style.point_size, None);
 
-        let point_cloud_style = PointCloudStyle { point_size: None };
-        assert_eq!(serde_json::to_value(point_cloud_style).unwrap(), json!({}));
         let point_cloud_style = PointCloudStyle {
+            style: Default::default(),
+            point_size: None,
+        };
+        assert_eq!(
+            serde_json::to_value(point_cloud_style).unwrap(),
+            json!({"color": null, "defines": null, "extensions": null, "extras": null, "meta": null, "show": null})
+        );
+        let point_cloud_style = PointCloudStyle {
+            style: Default::default(),
             point_size: Some(OneOfPointSize::NumberExpression(NumberExpression::Number(
                 1.0,
             ))),
@@ -67,6 +76,7 @@ mod tests {
         assert_eq!(
             serde_json::to_value(point_cloud_style).unwrap(),
             json!({
+                "color": null, "defines": null, "extensions": null, "extras": null, "meta": null, "show": null,
                 "pointSize": 1.0
             })
         );

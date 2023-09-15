@@ -5,10 +5,14 @@ use serde::{Deserialize, Serialize};
 use houtu_utility::ExtensibleObject;
 
 use crate::class_statistics::ClassStatistics;
+use crate::common::RootProperty;
 
 /// Statistics about entities.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Statistics {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
     /// A dictionary, where each key corresponds to a class ID in the classes dictionary
     /// and each value is an object containing statistics about entities that conform to the class.
     pub classes: Option<HashMap<String, ClassStatistics>>,
@@ -47,6 +51,7 @@ mod test {
                 map.insert(
                     "example_CLASS".to_owned(),
                     super::ClassStatistics {
+                        root: Default::default(),
                         count: 1,
                         properties: Some({
                             let mut map = HashMap::new();
