@@ -15,6 +15,7 @@ pub mod group;
 pub mod group_metadata;
 pub mod implicit_tiling;
 pub mod metadata_entity;
+pub mod point_cloud_style;
 pub mod properties;
 pub mod properties_statistics;
 pub mod property_table;

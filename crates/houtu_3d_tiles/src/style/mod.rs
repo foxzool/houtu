@@ -72,11 +72,18 @@ pub enum BooleanExpression {
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Conditions {
     /// A series of boolean conditions evaluated in order. For the first one that evaluates to true, its value, the 'result' (which is also an expression), is evaluated and returned. Result expressions shall all be the same type. If no condition evaluates to true, the result is `undefined`. When conditions is `undefined`, `null`, or an empty object, the result is `undefined`.
-    pub conditions: Option<Vec<Condition>>,
+    pub conditions: Vec<Condition>,
 }
 
 /// An `expression` evaluated as the result of a condition being true. An array of two expressions. If the first expression is evaluated and the result is `true`, then the second expression is evaluated and returned as the result of the condition.
 pub type Condition = [Expression; 2];
+
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(untagged)]
+pub enum NumberExpression {
+    Number(f64),
+    String(String),
+}
 
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 pub struct StyleMeta {
@@ -123,17 +130,22 @@ mod tests {
         assert_eq!(
             conditions,
             Conditions {
-                conditions: Some(vec![["true".to_owned(), "true".to_owned()]]),
+                conditions: vec![["true".to_owned(), "true".to_owned()]]
             }
         );
 
         let json = json!(
             {
-                "conditions": null
+                "conditions": []
             }
         );
         let conditions: Conditions = serde_json::from_value(json).unwrap();
-        assert_eq!(conditions, Conditions { conditions: None });
+        assert_eq!(
+            conditions,
+            Conditions {
+                conditions: Vec::new()
+            }
+        );
     }
 
     #[test]
@@ -166,7 +178,7 @@ mod tests {
         assert_eq!(
             show_properties,
             OneOfShow::Conditions(Conditions {
-                conditions: Some(vec![["true".to_owned(), "true".to_owned()]]),
+                conditions: vec![["true".to_owned(), "true".to_owned()]],
             })
         );
 
@@ -197,12 +209,26 @@ mod tests {
         assert_eq!(
             color_property,
             OneOfColor::Conditions(Conditions {
-                conditions: Some(vec![["true".to_owned(), "true".to_owned()]]),
+                conditions: vec![["true".to_owned(), "true".to_owned()]],
             })
         );
 
         let color_property = OneOfColor::default();
         assert_eq!(color_property, OneOfColor::Color("#FFFFFF".to_owned()));
+    }
+
+    #[test]
+    fn test_number_expression() {
+        let json = json!(1.0);
+        let number_expression: NumberExpression = serde_json::from_value(json).unwrap();
+        assert_eq!(number_expression, NumberExpression::Number(1.0));
+
+        let json = json!("1.0");
+        let number_expression: NumberExpression = serde_json::from_value(json).unwrap();
+        assert_eq!(
+            number_expression,
+            NumberExpression::String("1.0".to_owned())
+        );
     }
 
     #[test]
