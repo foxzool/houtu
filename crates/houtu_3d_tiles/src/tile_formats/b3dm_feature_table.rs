@@ -22,17 +22,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn batch_length_is_integer() {
-        let json = json!(1);
-        let batch_length: GlobalPropertyInteger = serde_json::from_value(json).unwrap();
-        assert_eq!(batch_length, GlobalPropertyInteger::Integer(1));
-
-        let json = json!(-1);
-        let batch_length: GlobalPropertyInteger = serde_json::from_value(json).unwrap();
-        assert_eq!(batch_length, GlobalPropertyInteger::Integer(-1));
-    }
-
-    #[test]
     fn batch_length_is_binary_body_offset() {
         let json = json!({
             "byteOffset": 1,

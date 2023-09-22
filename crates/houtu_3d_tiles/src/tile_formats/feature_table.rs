@@ -2,14 +2,26 @@ use crate::common::RootProperty;
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct FeatureTable {
     /// A basis for storing extensions and extras.
     #[serde(flatten)]
     pub root: RootProperty,
+    /// An object defining the offset into a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.
     pub binary_body_offset: Option<BinaryBodyOffset>,
+    /// An object defining the reference to a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.
     pub binary_body_reference: Option<BinaryBodyReference>,
+    /// An object defining a global boolean property value for all features.
+    pub global_property_boolean: Option<GlobalPropertyBoolean>,
+    /// An object defining a global integer property value for all features.
+    pub global_property_integer: Option<GlobalPropertyInteger>,
+    /// An object defining a global numeric property value for all features.
+    pub global_property_number: Option<GlobalPropertyNumber>,
+    /// An object defining a global 3-component numeric property values for all features.
+    pub global_property_cartesian3: Option<GlobalPropertyCartesian3>,
+    /// An object defining a global 4-component numeric property values for all features.
+    pub global_property_cartesian4: Option<GlobalPropertyCartesian4>,
 }
 
 /// An object defining the offset into a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.
@@ -26,7 +38,6 @@ pub struct BinaryBodyOffset {
 /// An object defining the reference to a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-#[serde(deny_unknown_fields)]
 pub struct BinaryBodyReference {
     #[serde(flatten)]
     pub root: RootProperty,
@@ -51,127 +62,36 @@ pub enum ComponentType {
     DOUBLE,
 }
 
-#[derive(Debug, Serialize, PartialEq)]
+/// An object defining a global integer property value for all features.
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(untagged)]
 pub enum GlobalPropertyInteger {
     BinaryBodyOffset(BinaryBodyOffset),
-    Integer(i64),
+    Integer(u64),
 }
 
-impl<'de> Deserialize<'de> for GlobalPropertyInteger {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = serde_json::Value::deserialize(deserializer)?;
-        match value {
-            serde_json::Value::Object(object) => {
-                match serde_json::from_value(serde_json::to_value(object).unwrap()) {
-                    Ok(binary_body_offset) => {
-                        Ok(GlobalPropertyInteger::BinaryBodyOffset(binary_body_offset))
-                    }
-                    Err(_) => Err(serde::de::Error::custom("byteOffset must be defined")),
-                }
-            }
-            serde_json::Value::Number(number) => match number.as_i64() {
-                None => {
-                    let number = number.as_f64().unwrap();
-                    Ok(GlobalPropertyInteger::Integer(number as i64))
-                }
-                Some(integer) => Ok(GlobalPropertyInteger::Integer(integer)),
-            },
-            _ => Err(serde::de::Error::custom(
-                "byteOffset or integer must be defined",
-            )),
-        }
-    }
+/// An object defining a global numeric property value for all features.
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(untagged)]
+pub enum GlobalPropertyNumber {
+    BinaryBodyOffset(BinaryBodyOffset),
+    Number(f64),
 }
 
 /// A `GlobalPropertyCartesian3` object defining a 3-component numeric property for all features. Details about this property are described in the 3D Tiles specification.
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(untagged)]
 pub enum GlobalPropertyCartesian3 {
     BinaryBodyOffset(BinaryBodyOffset),
     Cartesian3([f64; 3]),
 }
 
-impl<'de> Deserialize<'de> for GlobalPropertyCartesian3 {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = serde_json::Value::deserialize(deserializer)?;
-        match value {
-            serde_json::Value::Object(object) => {
-                match serde_json::from_value(serde_json::to_value(object).unwrap()) {
-                    Ok(binary_body_offset) => Ok(GlobalPropertyCartesian3::BinaryBodyOffset(
-                        binary_body_offset,
-                    )),
-                    Err(_) => Err(serde::de::Error::custom("byteOffset must be defined")),
-                }
-            }
-            serde_json::Value::Array(value) => {
-                if value.len() == 3 {
-                    let mut array = [0.0; 3];
-                    for (i, v) in value.iter().enumerate() {
-                        if let Some(v) = v.as_f64() {
-                            array[i] = v;
-                        } else {
-                            return Err(serde::de::Error::custom("Invalid array"));
-                        }
-                    }
-                    Ok(GlobalPropertyCartesian3::Cartesian3(array))
-                } else {
-                    Err(serde::de::Error::custom("Invalid array"))
-                }
-            }
-            _ => Err(serde::de::Error::custom(
-                "byteOffset, cartesian3 must be defined",
-            )),
-        }
-    }
-}
-
 /// An object defining a global 4-component numeric property values for all features.
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(untagged)]
 pub enum GlobalPropertyCartesian4 {
     BinaryBodyOffset(BinaryBodyOffset),
     Cartesian4([f64; 4]),
-}
-
-impl<'de> Deserialize<'de> for GlobalPropertyCartesian4 {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = serde_json::Value::deserialize(deserializer)?;
-        match value {
-            serde_json::Value::Object(object) => {
-                match serde_json::from_value(serde_json::to_value(object).unwrap()) {
-                    Ok(binary_body_offset) => Ok(GlobalPropertyCartesian4::BinaryBodyOffset(
-                        binary_body_offset,
-                    )),
-                    Err(_) => Err(serde::de::Error::custom("byteOffset must be defined")),
-                }
-            }
-            serde_json::Value::Array(value) => {
-                if value.len() == 4 {
-                    let mut array = [0.0; 4];
-                    for (i, v) in value.iter().enumerate() {
-                        if let Some(v) = v.as_f64() {
-                            array[i] = v;
-                        } else {
-                            return Err(serde::de::Error::custom("Invalid array"));
-                        }
-                    }
-                    Ok(GlobalPropertyCartesian4::Cartesian4(array))
-                } else {
-                    Err(serde::de::Error::custom("Invalid array"))
-                }
-            }
-            _ => Err(serde::de::Error::custom(
-                "byteOffset, cartesian3 must be defined",
-            )),
-        }
-    }
 }
 
 pub type GlobalPropertyBoolean = bool;
@@ -181,20 +101,18 @@ pub type GlobalPropertyBoolean = bool;
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum Property {
-    /// An object defining the offset into a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.    
-    Offset(BinaryBodyOffset),
     /// An object defining the reference to a section of the binary body of the features table where the property values are stored if not defined directly in the JSON.
-    Reference(BinaryBodyReference),
+    BinaryBodyReference(BinaryBodyReference),
     /// An object defining a global boolean property value for all features.
-    Boolean(bool),
+    GlobalPropertyBoolean(GlobalPropertyBoolean),
     /// An object defining a global integer property value for all features.
-    Integer(i64),
+    GlobalPropertyInteger(GlobalPropertyInteger),
     /// An object defining a global numeric property value for all features.
-    GlobalPropertyNumber(f64),
+    GlobalPropertyNumber(GlobalPropertyNumber),
     /// An object defining a global 3-component numeric property values for all features.
-    GlobalPropertyCartesian3([f64; 3]),
+    GlobalPropertyCartesian3(GlobalPropertyCartesian3),
     /// An object defining a global 4-component numeric property values for all features.
-    GlobalPropertyCartesian4([f64; 4]),
+    GlobalPropertyCartesian4(GlobalPropertyCartesian4),
 }
 
 #[cfg(test)]
@@ -203,33 +121,18 @@ mod test {
     use serde_json::json;
 
     #[test]
-    fn test_property_byte_offset() {
-        let json = r#"
-        {
-            "byteOffset": 10
-        }"#;
-        let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
-        let property: Property = serde_json::from_value(json_value).unwrap();
-        assert_eq!(
-            property,
-            Property::Offset(BinaryBodyOffset {
-                byte_offset: 10,
-                ..Default::default()
-            })
-        );
-    }
-
-    #[test]
     fn test_property_binary_ref() {
         let json = json!(
         {
+            "byteOffset": 0,
             "componentType": "INT"
         });
         let property: Property = serde_json::from_value(json).unwrap();
         assert_eq!(
             property,
-            Property::Reference(BinaryBodyReference {
+            Property::BinaryBodyReference(BinaryBodyReference {
                 component_type: ComponentType::INT,
+                byte_offset: 0,
                 ..Default::default()
             })
         );
@@ -247,24 +150,32 @@ mod test {
         let json = r#"true"#;
         let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
         let property: Property = serde_json::from_value(json_value).unwrap();
-        assert_eq!(property, Property::Boolean(true));
+        assert_eq!(property, Property::GlobalPropertyBoolean(true));
 
         let json = r#"1"#;
         let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
         let property: Property = serde_json::from_value(json_value).unwrap();
-        assert_eq!(property, Property::Integer(1));
+        assert_eq!(
+            property,
+            Property::GlobalPropertyInteger(GlobalPropertyInteger::Integer(1))
+        );
 
         let json = r#"1.0"#;
         let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
         let property: Property = serde_json::from_value(json_value).unwrap();
-        assert_eq!(property, Property::GlobalPropertyNumber(1.0));
+        assert_eq!(
+            property,
+            Property::GlobalPropertyNumber(GlobalPropertyNumber::Number(1.0))
+        );
 
         let json = r#"[1.0, 2.0, 3.0]"#;
         let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
         let property: Property = serde_json::from_value(json_value).unwrap();
         assert_eq!(
             property,
-            Property::GlobalPropertyCartesian3([1.0, 2.0, 3.0])
+            Property::GlobalPropertyCartesian3(GlobalPropertyCartesian3::Cartesian3([
+                1.0, 2.0, 3.0
+            ]))
         );
 
         let json = r#"[1.0, 2.0, 3.0, 4.0]"#;
@@ -272,7 +183,9 @@ mod test {
         let property: Property = serde_json::from_value(json_value).unwrap();
         assert_eq!(
             property,
-            Property::GlobalPropertyCartesian4([1.0, 2.0, 3.0, 4.0])
+            Property::GlobalPropertyCartesian4(GlobalPropertyCartesian4::Cartesian4([
+                1.0, 2.0, 3.0, 4.0
+            ]))
         );
 
         let json = r#"[1.0, 2.0]"#;
@@ -286,5 +199,231 @@ mod test {
         let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
 
         assert!(serde_json::from_value::<Property>(json_value).is_err());
+    }
+
+    #[test]
+    fn test_global_property_integer() {
+        let json = r#"
+        {
+            "byteOffset": 0
+        }"#;
+        let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
+        let property: GlobalPropertyInteger = serde_json::from_value(json_value).unwrap();
+        assert_eq!(
+            property,
+            GlobalPropertyInteger::BinaryBodyOffset(BinaryBodyOffset {
+                byte_offset: 0,
+                ..Default::default()
+            })
+        );
+
+        let json = r#"1"#;
+        let property: GlobalPropertyInteger = serde_json::from_str(json).unwrap();
+        assert_eq!(property, GlobalPropertyInteger::Integer(1));
+    }
+
+    #[test]
+    fn test_global_property_number() {
+        let json = r#"
+        {
+            "byteOffset": 0
+        }"#;
+        let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
+        let property: GlobalPropertyNumber = serde_json::from_value(json_value).unwrap();
+        assert_eq!(
+            property,
+            GlobalPropertyNumber::BinaryBodyOffset(BinaryBodyOffset {
+                byte_offset: 0,
+                ..Default::default()
+            })
+        );
+
+        let json = r#"1.0"#;
+        let property: GlobalPropertyNumber = serde_json::from_str(json).unwrap();
+        assert_eq!(property, GlobalPropertyNumber::Number(1.0));
+    }
+
+    #[test]
+    fn test_global_property_cartesian3() {
+        let json = r#"
+        {
+            "byteOffset": 0
+        }"#;
+        let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
+        let property: GlobalPropertyCartesian3 = serde_json::from_value(json_value).unwrap();
+        assert_eq!(
+            property,
+            GlobalPropertyCartesian3::BinaryBodyOffset(BinaryBodyOffset {
+                byte_offset: 0,
+                ..Default::default()
+            })
+        );
+
+        let json = r#"
+        {
+            "byteOffset": 0,
+            "componentType": "UNSIGNED_SHORT",
+            "type": "SCALAR"
+        }"#;
+        let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
+        let property: GlobalPropertyCartesian3 = serde_json::from_value(json_value).unwrap();
+        assert_eq!(
+            property,
+            GlobalPropertyCartesian3::BinaryBodyOffset(BinaryBodyOffset {
+                byte_offset: 0,
+                ..Default::default()
+            })
+        );
+
+        let json = r#"
+        {
+            "byteOffset": 0,
+            "componentType": "UNSIGNED_SHORT",
+            "type": "VEC3"
+        }"#;
+        let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
+        let property: GlobalPropertyCartesian3 = serde_json::from_value(json_value).unwrap();
+        assert_eq!(
+            property,
+            GlobalPropertyCartesian3::BinaryBodyOffset(BinaryBodyOffset {
+                byte_offset: 0,
+                ..Default::default()
+            })
+        );
+
+        let json = json!([1.0, 2.0, 3.0]);
+        let property: GlobalPropertyCartesian3 = serde_json::from_value(json).unwrap();
+        assert_eq!(
+            property,
+            GlobalPropertyCartesian3::Cartesian3([1.0, 2.0, 3.0])
+        );
+
+        let json = json!([1.0, 2.0, 3.0, 4.0]);
+        assert!(serde_json::from_value::<GlobalPropertyCartesian3>(json).is_err());
+
+        let json = json!([1.0, 2.0]);
+        assert!(serde_json::from_value::<GlobalPropertyCartesian3>(json).is_err());
+    }
+
+    #[test]
+    fn test_global_property_cartesian4() {
+        let json = r#"
+        {
+            "byteOffset": 0
+        }"#;
+        let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
+        let property: GlobalPropertyCartesian4 = serde_json::from_value(json_value).unwrap();
+        assert_eq!(
+            property,
+            GlobalPropertyCartesian4::BinaryBodyOffset(BinaryBodyOffset {
+                byte_offset: 0,
+                ..Default::default()
+            })
+        );
+
+        let json = r#"
+        {
+            "byteOffset": 0,
+            "componentType": "UNSIGNED_SHORT",
+            "type": "SCALAR"
+        }"#;
+        let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
+        let property: GlobalPropertyCartesian4 = serde_json::from_value(json_value).unwrap();
+        assert_eq!(
+            property,
+            GlobalPropertyCartesian4::BinaryBodyOffset(BinaryBodyOffset {
+                byte_offset: 0,
+                ..Default::default()
+            })
+        );
+
+        let json = r#"
+        {
+            "byteOffset": 0,
+            "componentType": "UNSIGNED_SHORT",
+            "type": "VEC3"
+        }"#;
+        let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
+        let property: GlobalPropertyCartesian4 = serde_json::from_value(json_value).unwrap();
+        assert_eq!(
+            property,
+            GlobalPropertyCartesian4::BinaryBodyOffset(BinaryBodyOffset {
+                byte_offset: 0,
+                ..Default::default()
+            })
+        );
+
+        let json = r#"
+        {
+            "byteOffset": 0,
+            "componentType": "UNSIGNED_SHORT",
+            "type": "VEC4"
+        }"#;
+        let json_value: serde_json::Value = serde_json::from_str(json).unwrap();
+        let property: GlobalPropertyCartesian4 = serde_json::from_value(json_value).unwrap();
+        assert_eq!(
+            property,
+            GlobalPropertyCartesian4::BinaryBodyOffset(BinaryBodyOffset {
+                byte_offset: 0,
+                ..Default::default()
+            })
+        );
+
+        let json = json!([1.0, 2.0, 3.0, 4.0]);
+        let property: GlobalPropertyCartesian4 = serde_json::from_value(json).unwrap();
+        assert_eq!(
+            property,
+            GlobalPropertyCartesian4::Cartesian4([1.0, 2.0, 3.0, 4.0])
+        );
+
+        let json = json!([1.0, 2.0, 3.0]);
+        assert!(serde_json::from_value::<GlobalPropertyCartesian4>(json).is_err());
+
+        let json = json!([1.0, 2.0, 3.0, 4.0, 5.0]);
+        assert!(serde_json::from_value::<GlobalPropertyCartesian4>(json).is_err());
+    }
+
+    #[test]
+    fn test_feature_table() {
+        let json = r#"
+        {
+            "binaryBodyOffset": {
+                "byteOffset": 0
+            },
+            "binaryBodyReference": {
+                "byteOffset": 0,
+                "componentType": "UNSIGNED_SHORT"
+            },
+            "globalPropertyBoolean": true,
+            "globalPropertyInteger": 1,
+            "globalPropertyNumber": 1.0,
+            "globalPropertyCartesian3": [1.0, 2.0, 3.0],
+            "globalPropertyCartesian4": [1.0, 2.0, 3.0, 4.0]
+        }"#;
+        let feature_table: FeatureTable = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            feature_table,
+            FeatureTable {
+                binary_body_offset: Some(BinaryBodyOffset {
+                    byte_offset: 0,
+                    ..Default::default()
+                }),
+                binary_body_reference: Some(BinaryBodyReference {
+                    byte_offset: 0,
+                    component_type: ComponentType::UNSIGNED_SHORT,
+                    ..Default::default()
+                }),
+                global_property_boolean: Some(true),
+                global_property_integer: Some(GlobalPropertyInteger::Integer(1)),
+                global_property_number: Some(GlobalPropertyNumber::Number(1.0)),
+                global_property_cartesian3: Some(GlobalPropertyCartesian3::Cartesian3([
+                    1.0, 2.0, 3.0
+                ])),
+                global_property_cartesian4: Some(GlobalPropertyCartesian4::Cartesian4([
+                    1.0, 2.0, 3.0, 4.0
+                ])),
+                ..Default::default()
+            }
+        );
     }
 }
