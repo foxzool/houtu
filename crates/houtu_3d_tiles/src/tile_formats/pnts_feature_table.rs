@@ -1,12 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 use crate::tile_formats::feature_table::{
-    BinaryBodyReference, GlobalPropertyCartesian3, GlobalPropertyCartesian4, GlobalPropertyInteger,
+    BinaryBodyReference, FeatureTable, GlobalPropertyCartesian3, GlobalPropertyCartesian4,
+    GlobalPropertyInteger,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub struct PntsFeatureTable {
+    #[serde(flatten)]
+    pub feature_table: FeatureTable,
     /// A `BinaryBodyReference` object defining the reference to a section of the binary body where the property values are stored. Details about this property are described in the 3D Tiles specification.
     pub position: Option<BinaryBodyReference>,
     /// A `BinaryBodyReference` object defining the reference to a section of the binary body where the property values are stored. Details about this property are described in the 3D Tiles specification.
@@ -50,28 +53,36 @@ mod tests {
         let json = json!(
             {
                 "POSITION": {
-                   "componentType": "BYTE"
+                    "byteOffset": 0,
+                    "componentType": "BYTE"
                 },
                 "POSITION_QUANTIZED": {
-                   "componentType": "UNSIGNED_SHORT"
+                    "byteOffset": 0,
+                    "componentType": "UNSIGNED_SHORT"
                 },
                 "RGBA": {
-                   "componentType": "UNSIGNED_BYTE"
+                    "byteOffset": 0,
+                    "componentType": "UNSIGNED_BYTE"
                 },
                 "RGB": {
-                   "componentType": "UNSIGNED_BYTE"
+                    "byteOffset": 0,
+                    "componentType": "UNSIGNED_BYTE"
                 },
                 "RGB565": {
-                   "componentType": "UNSIGNED_BYTE"
+                    "byteOffset": 0,
+                    "componentType": "UNSIGNED_BYTE"
                 },
                 "NORMAL": {
-                   "componentType": "FLOAT"
+                    "byteOffset": 0,
+                    "componentType": "FLOAT"
                 },
                 "NORMAL_OCT16P": {
-                   "componentType": "UNSIGNED_BYTE"
+                    "byteOffset": 0,
+                    "componentType": "UNSIGNED_BYTE"
                 },
                 "BATCH_ID": {
-                   "componentType": "UNSIGNED_SHORT"
+                    "byteOffset": 0,
+                    "componentType": "UNSIGNED_SHORT"
                 },
                 "POINTS_LENGTH": 1,
                 "RTC_CENTER": [1.0, 2.0 ,3.0],

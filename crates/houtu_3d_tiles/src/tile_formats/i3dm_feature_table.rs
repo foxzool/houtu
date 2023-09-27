@@ -1,13 +1,16 @@
 use serde::{Deserialize, Serialize};
 
 use crate::tile_formats::feature_table::{
-    BinaryBodyReference, GlobalPropertyBoolean, GlobalPropertyCartesian3, GlobalPropertyInteger,
+    BinaryBodyReference, FeatureTable, GlobalPropertyBoolean, GlobalPropertyCartesian3,
+    GlobalPropertyInteger,
 };
 
 /// A set of Instanced 3D Model semantics that contains values defining the position and appearance properties for instanced models in a tile.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub struct I3dmFeatureTable {
+    #[serde(flatten)]
+    pub feature_table: FeatureTable,
     /// A `BinaryBodyReference` object defining the reference to a section of the binary body where the property values are stored. Details about this property are described in the 3D Tiles specification.
     pub position: Option<BinaryBodyReference>,
     /// A `BinaryBodyReference` object defining the reference to a section of the binary body where the property values are stored. Details about this property are described in the 3D Tiles specification.
@@ -51,31 +54,40 @@ mod tests {
         let json = json!(
             {
                 "POSITION": {
-                   "componentType": "BYTE"
+                    "byteOffset": 0,
+                    "componentType": "BYTE"
                 },
                 "POSITION_QUANTIZED": {
-                   "componentType": "UNSIGNED_SHORT"
+                    "byteOffset": 0,
+                    "componentType": "UNSIGNED_SHORT"
                 },
                 "NORMAL_UP": {
-                   "componentType": "FLOAT"
+                    "byteOffset": 0,
+                    "componentType": "FLOAT"
                 },
                 "NORMAL_RIGHT": {
+                    "byteOffset": 0,
                    "componentType": "FLOAT"
                 },
                 "NORMAL_UP_OCT32P": {
-                   "componentType": "UNSIGNED_BYTE"
+                    "byteOffset": 0,
+                    "componentType": "UNSIGNED_BYTE"
                 },
                 "NORMAL_RIGHT_OCT32P": {
-                   "componentType": "UNSIGNED_BYTE"
+                    "byteOffset": 0,
+                    "componentType": "UNSIGNED_BYTE"
                 },
                 "SCALE": {
-                   "componentType": "FLOAT"
+                    "byteOffset": 0,
+                    "componentType": "FLOAT"
                 },
                 "SCALE_NON_UNIFORM": {
-                   "componentType": "FLOAT"
+                    "byteOffset": 0,
+                    "componentType": "FLOAT"
                 },
                 "BATCH_ID": {
-                   "componentType": "UNSIGNED_SHORT"
+                    "byteOffset": 0,
+                    "componentType": "UNSIGNED_SHORT"
                 },
                 "INSTANCE_LENGTH": 1,
                 "RTC_CENTER": [1.0, 2.0 ,3.0],

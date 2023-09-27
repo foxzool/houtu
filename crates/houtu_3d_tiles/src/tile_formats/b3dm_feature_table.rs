@@ -1,11 +1,15 @@
 use serde::{Deserialize, Serialize};
 
-use crate::tile_formats::feature_table::{GlobalPropertyCartesian3, GlobalPropertyInteger};
+use crate::tile_formats::feature_table::{
+    FeatureTable, GlobalPropertyCartesian3, GlobalPropertyInteger,
+};
 
 /// A set of Batched 3D Model semantics that contain additional information about features in a tile.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "UPPERCASE")]
 pub struct B3dmFeatureTable {
+    #[serde(flatten)]
+    pub feature_table: FeatureTable,
     /// A GlobalPropertyInteger object defining an integer property for all features.
     /// Details about this property are described in the 3D Tiles specification.
     pub batch_length: GlobalPropertyInteger,
