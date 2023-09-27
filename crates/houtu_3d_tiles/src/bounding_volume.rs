@@ -1,3 +1,4 @@
+use crate::common::RootProperty;
 use serde::{Deserialize, Serialize};
 
 /// A bounding volume that encloses a tile or its content.
@@ -5,6 +6,9 @@ use serde::{Deserialize, Serialize};
 /// Bounding volumes include `box`, `region`, or `sphere`.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BoundingVolume {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
     /// An array of 12 numbers that define an oriented bounding box.
     /// The first three elements define the x, y, and z values for the center of the box.
     /// The next three elements (with indices 3, 4, and 5) define the x axis direction and half-length.
@@ -26,4 +30,25 @@ pub struct BoundingVolume {
     /// The last element (with index 3) defines the radius in meters.
     /// The radius shall not be negative.
     pub sphere: Option<[f64; 4]>,
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    #[test]
+    fn test_bounding_value() {
+        let json = json!({
+            "box": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0],
+            "region": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+            "sphere": [1.0, 2.0, 3.0, 4.0],
+        });
+        let bounding_volume: super::BoundingVolume = serde_json::from_value(json).unwrap();
+        assert_eq!(
+            bounding_volume.r#box,
+            Some([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0])
+        );
+        assert_eq!(bounding_volume.region, Some([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]));
+        assert_eq!(bounding_volume.sphere, Some([1.0, 2.0, 3.0, 4.0]));
+    }
 }

@@ -10,6 +10,7 @@ use crate::tile_formats::feature_table::ComponentType;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BatchTable {
+    /// A basis for storing extensions and extras.
     #[serde(flatten)]
     pub root: RootProperty,
     /// An object defining the reference to a section of the binary body of the batch table where the property values are stored if not defined directly in the JSON.
