@@ -1,18 +1,22 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
 
 use crate::asset::Asset;
+use crate::common::RootProperty;
 use crate::group::Group;
 use crate::metadata_entity::MetaDataEntity;
 use crate::properties::Properties;
 use crate::schema::Schema;
 use crate::statistics::Statistics;
 
+/// A 3D Tiles tileset.
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Tileset {
+    #[serde(flatten)]
+    pub root_property: RootProperty,
     /// Metadata about the entire tileset.
-    pub asset: Option<Asset>,
+    pub asset: Asset,
     /// A dictionary object of metadata about per-feature properties.
     pub properties: Option<HashMap<String, Properties>>,
     /// An object defining the structure of metadata classes and enums. When this is defined, then schemaUri shall be undefined.
@@ -29,11 +33,11 @@ pub struct Tileset {
     #[serde(rename = "geometricError")]
     pub geometric_error: f64,
     /// The root tile.
-    pub root: Option<crate::tile::Tile>,
+    pub root: crate::tile::Tile,
     /// Names of 3D Tiles extensions used somewhere in this tileset.
     #[serde(rename = "extensionsUsed")]
-    pub extensions_used: Option<Vec<String>>,
+    pub extensions_used: Option<HashSet<String>>,
     /// Names of 3D Tiles extensions required to properly load this tileset. Each element of this array shall also be contained in `extensionsUsed`.
     #[serde(rename = "extensionsRequired")]
-    pub extensions_required: Option<Vec<String>>,
+    pub extensions_required: Option<HashSet<String>>,
 }

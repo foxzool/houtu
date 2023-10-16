@@ -1,16 +1,23 @@
 use serde::{Deserialize, Serialize};
+use strum_macros::EnumString;
 
 use crate::bounding_volume::BoundingVolume;
+use crate::common::RootProperty;
 use crate::content::Content;
-use crate::implicit_tiling::ImplicitTiling;
 use crate::metadata_entity::MetaDataEntity;
+use crate::tile::implicit_tiling::ImplicitTiling;
+
+mod implicit_tiling;
 
 /// A tile in a 3D Tiles tileset.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Tile {
+    /// A basis for storing extensions and extras.
+    #[serde(flatten)]
+    pub root: RootProperty,
     /// The bounding volume that encloses the tile.
     #[serde(rename = "boundingVolume")]
-    pub bounding_volume: Option<BoundingVolume>,
+    pub bounding_volume: BoundingVolume,
     /// Optional bounding volume that defines the volume the viewer shall be inside of before the tile's content
     /// will be requested and before the tile will be refined based on geometricError.
     #[serde(rename = "viewerRequestVolume")]
@@ -18,7 +25,7 @@ pub struct Tile {
     /// The error, in meters, introduced if this tile is rendered and its children are not. At runtime,
     /// the geometric error is used to compute screen space error (SSE), i.e., the error measured in pixels.
     #[serde(rename = "geometricError")]
-    pub geometric_error: Option<f64>,
+    pub geometric_error: f64,
     /// Specifies if additive or replacement refinement is used when traversing the tileset for rendering.
     /// This property is required for the root tile of a tileset; it is optional for all other tiles.
     /// The default is to inherit from the parent tile.
@@ -43,36 +50,54 @@ pub struct Tile {
     pub children: Option<Vec<Tile>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, EnumString)]
 pub enum Refine {
     ADD,
     REPLACE,
-    Other(String),
 }
 
-impl<'de> serde::Deserialize<'de> for Refine {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = String::deserialize(deserializer)?;
-        match value.as_str() {
-            "ADD" => Ok(Refine::ADD),
-            "REPLACE" => Ok(Refine::REPLACE),
-            _ => Ok(Refine::Other(value)),
-        }
-    }
-}
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
 
-impl serde::Serialize for Refine {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            Refine::ADD => serializer.serialize_str("ADD"),
-            Refine::REPLACE => serializer.serialize_str("REPLACE"),
-            Refine::Other(value) => serializer.serialize_str(value),
-        }
+    #[test]
+    fn test_tile() {
+        let json = json!({
+            "boundingVolume": {
+                "region": [
+                    -1.319375,
+                    0.698858,
+                    -1.318375,
+                    0.699858,
+                    0,
+                    100
+                ]
+            },
+            "geometricError": 0.0,
+            "content": {
+                "uri": "0.b3dm"
+            },
+            "children": [
+                {
+                    "boundingVolume": {
+                        "region": [
+                            -1.319375,
+                            0.698858,
+                            -1.318375,
+                            0.699858,
+                            0,
+                            100
+                        ]
+                    },
+                    "geometricError": 0.0,
+                    "content": {
+                        "uri": "1.b3dm"
+                    }
+                }
+            ]
+        });
+        let tile: super::Tile = serde_json::from_value(json).unwrap();
+        assert_eq!(tile.geometric_error, 0.0);
+        assert_eq!(tile.children.unwrap().len(), 1);
     }
 }

@@ -32,7 +32,7 @@ impl Default for Enum {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum ValueType {
     INT8,
     UINT8,
@@ -42,46 +42,6 @@ pub enum ValueType {
     UINT32,
     INT64,
     UINT64,
-    Other(String),
-}
-
-impl<'de> serde::Deserialize<'de> for ValueType {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = String::deserialize(deserializer)?;
-        match value.as_str() {
-            "INT8" => Ok(ValueType::INT8),
-            "UINT8" => Ok(ValueType::UINT8),
-            "INT16" => Ok(ValueType::INT16),
-            "UINT16" => Ok(ValueType::UINT16),
-            "INT32" => Ok(ValueType::INT32),
-            "UINT32" => Ok(ValueType::UINT32),
-            "INT64" => Ok(ValueType::INT64),
-            "UINT64" => Ok(ValueType::UINT64),
-            _ => Ok(ValueType::Other(value)),
-        }
-    }
-}
-
-impl serde::Serialize for ValueType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            ValueType::INT8 => serializer.serialize_str("INT8"),
-            ValueType::UINT8 => serializer.serialize_str("UINT8"),
-            ValueType::INT16 => serializer.serialize_str("INT16"),
-            ValueType::UINT16 => serializer.serialize_str("UINT16"),
-            ValueType::INT32 => serializer.serialize_str("INT32"),
-            ValueType::UINT32 => serializer.serialize_str("UINT32"),
-            ValueType::INT64 => serializer.serialize_str("INT64"),
-            ValueType::UINT64 => serializer.serialize_str("UINT64"),
-            ValueType::Other(value) => serializer.serialize_str(value),
-        }
-    }
 }
 
 #[cfg(test)]
@@ -115,9 +75,6 @@ mod tests {
         let json = json!("UINT64");
         let value_type: ValueType = serde_json::from_value(json).unwrap();
         assert_eq!(value_type, ValueType::UINT64);
-        let json = json!("Other");
-        let value_type: ValueType = serde_json::from_value(json).unwrap();
-        assert_eq!(value_type, ValueType::Other("Other".to_string()));
     }
 
     #[test]

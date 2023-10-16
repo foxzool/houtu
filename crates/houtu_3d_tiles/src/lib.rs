@@ -8,7 +8,7 @@ pub mod content;
 pub mod enum_;
 pub mod enum_value;
 pub mod group;
-pub mod implicit_tiling;
+
 pub mod metadata_entity;
 pub mod point_cloud_style;
 pub mod properties;

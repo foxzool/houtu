@@ -31,85 +31,21 @@ pub struct PropertyTableProperty {
 }
 
 /// Known values for The type of values in `arrayOffsets`.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum ArrayOffsetType {
     UINT8,
     UINT16,
     UINT32,
     UINT64,
-    Other(String),
-}
-
-impl<'de> serde::Deserialize<'de> for ArrayOffsetType {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = String::deserialize(deserializer)?;
-        match value.as_str() {
-            "UINT8" => Ok(ArrayOffsetType::UINT8),
-            "UINT16" => Ok(ArrayOffsetType::UINT16),
-            "UINT32" => Ok(ArrayOffsetType::UINT32),
-            "UINT64" => Ok(ArrayOffsetType::UINT64),
-            _ => Ok(ArrayOffsetType::Other(value)),
-        }
-    }
-}
-
-impl serde::Serialize for ArrayOffsetType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            ArrayOffsetType::UINT8 => serializer.serialize_str("UINT8"),
-            ArrayOffsetType::UINT16 => serializer.serialize_str("UINT16"),
-            ArrayOffsetType::UINT32 => serializer.serialize_str("UINT32"),
-            ArrayOffsetType::UINT64 => serializer.serialize_str("UINT64"),
-            ArrayOffsetType::Other(value) => serializer.serialize_str(value),
-        }
-    }
 }
 
 /// Known values for The type of values in `stringOffsets`.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum StringOffsetType {
     UINT8,
     UINT16,
     UINT32,
     UINT64,
-    Other(String),
-}
-
-impl<'de> serde::Deserialize<'de> for StringOffsetType {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = String::deserialize(deserializer)?;
-        match value.as_str() {
-            "UINT8" => Ok(StringOffsetType::UINT8),
-            "UINT16" => Ok(StringOffsetType::UINT16),
-            "UINT32" => Ok(StringOffsetType::UINT32),
-            "UINT64" => Ok(StringOffsetType::UINT64),
-            _ => Ok(StringOffsetType::Other(value)),
-        }
-    }
-}
-
-impl serde::Serialize for StringOffsetType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            StringOffsetType::UINT8 => serializer.serialize_str("UINT8"),
-            StringOffsetType::UINT16 => serializer.serialize_str("UINT16"),
-            StringOffsetType::UINT32 => serializer.serialize_str("UINT32"),
-            StringOffsetType::UINT64 => serializer.serialize_str("UINT64"),
-            StringOffsetType::Other(value) => serializer.serialize_str(value),
-        }
-    }
 }
 
 #[cfg(test)]
@@ -134,13 +70,6 @@ mod tests {
         let json = r#""UINT64""#;
         let string_offset_type: StringOffsetType = serde_json::from_str(json).unwrap();
         assert_eq!(string_offset_type, StringOffsetType::UINT64);
-
-        let json = r#""OTHER""#;
-        let string_offset_type: StringOffsetType = serde_json::from_str(json).unwrap();
-        assert_eq!(
-            string_offset_type,
-            StringOffsetType::Other("OTHER".to_owned())
-        );
     }
 
     #[test]
@@ -160,13 +89,6 @@ mod tests {
         let json = r#""UINT64""#;
         let array_offset_type: ArrayOffsetType = serde_json::from_str(json).unwrap();
         assert_eq!(array_offset_type, ArrayOffsetType::UINT64);
-
-        let json = r#""OTHER""#;
-        let array_offset_type: ArrayOffsetType = serde_json::from_str(json).unwrap();
-        assert_eq!(
-            array_offset_type,
-            ArrayOffsetType::Other("OTHER".to_owned())
-        );
     }
 
     #[test]

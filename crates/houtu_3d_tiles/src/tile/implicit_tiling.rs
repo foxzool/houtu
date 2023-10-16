@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use strum_macros::EnumString;
 
 use crate::subtrees::Subtrees;
 
@@ -20,36 +21,10 @@ pub struct ImplicitTiling {
     pub subtrees: Subtrees,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, EnumString)]
 pub enum SubdivisionScheme {
+    #[strum(ascii_case_insensitive)]
     Quadtree,
+    #[strum(ascii_case_insensitive)]
     Octree,
-    Other(String),
-}
-
-impl<'de> serde::Deserialize<'de> for SubdivisionScheme {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = String::deserialize(deserializer)?;
-        match value.as_str() {
-            "QUADTREE" => Ok(SubdivisionScheme::Quadtree),
-            "OCTREE" => Ok(SubdivisionScheme::Octree),
-            _ => Ok(SubdivisionScheme::Other(value)),
-        }
-    }
-}
-
-impl serde::Serialize for SubdivisionScheme {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            SubdivisionScheme::Quadtree => serializer.serialize_str("QUADTREE"),
-            SubdivisionScheme::Octree => serializer.serialize_str("OCTREE"),
-            SubdivisionScheme::Other(value) => serializer.serialize_str(value),
-        }
-    }
 }

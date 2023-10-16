@@ -76,7 +76,7 @@ pub struct ClassProperty {
 }
 
 /// The element type.
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Default, PartialEq)]
 pub enum ElementType {
     #[default]
     SCALAR,
@@ -89,50 +89,6 @@ pub enum ElementType {
     STRING,
     BOOLEAN,
     ENUM,
-    Other(String),
-}
-
-impl<'de> serde::Deserialize<'de> for ElementType {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = String::deserialize(deserializer)?;
-        match value.as_str() {
-            "SCALAR" => Ok(ElementType::SCALAR),
-            "VEC2" => Ok(ElementType::VEC2),
-            "VEC3" => Ok(ElementType::VEC3),
-            "VEC4" => Ok(ElementType::VEC4),
-            "MAT2" => Ok(ElementType::MAT2),
-            "MAT3" => Ok(ElementType::MAT3),
-            "MAT4" => Ok(ElementType::MAT4),
-            "STRING" => Ok(ElementType::STRING),
-            "BOOLEAN" => Ok(ElementType::BOOLEAN),
-            "ENUM" => Ok(ElementType::ENUM),
-            _ => Ok(ElementType::Other(value)),
-        }
-    }
-}
-
-impl serde::Serialize for ElementType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        match self {
-            ElementType::SCALAR => serializer.serialize_str("SCALAR"),
-            ElementType::VEC2 => serializer.serialize_str("VEC2"),
-            ElementType::VEC3 => serializer.serialize_str("VEC3"),
-            ElementType::VEC4 => serializer.serialize_str("VEC4"),
-            ElementType::MAT2 => serializer.serialize_str("MAT2"),
-            ElementType::MAT3 => serializer.serialize_str("MAT3"),
-            ElementType::MAT4 => serializer.serialize_str("MAT4"),
-            ElementType::STRING => serializer.serialize_str("STRING"),
-            ElementType::BOOLEAN => serializer.serialize_str("BOOLEAN"),
-            ElementType::ENUM => serializer.serialize_str("ENUM"),
-            ElementType::Other(value) => serializer.serialize_str(value),
-        }
-    }
 }
 
 /// The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types.
@@ -197,10 +153,6 @@ mod tests {
         let json = json!("ENUM");
         let element_type: ElementType = serde_json::from_value(json).unwrap();
         assert_eq!(element_type, ElementType::ENUM);
-
-        let json = json!("Other");
-        let element_type: ElementType = serde_json::from_value(json).unwrap();
-        assert_eq!(element_type, ElementType::Other("Other".to_owned()));
     }
 
     #[test]
@@ -247,9 +199,6 @@ mod tests {
         let json = json!("FLOAT64");
         let component_type: ComponentType = serde_json::from_value(json).unwrap();
         assert_eq!(component_type, ComponentType::FLOAT64);
-
-        let json = json!("Other");
-        assert!(serde_json::from_value::<ComponentType>(json).is_err())
     }
 
     #[test]

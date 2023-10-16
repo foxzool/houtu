@@ -2,7 +2,7 @@ use crate::common::RootProperty;
 use serde::{Deserialize, Serialize};
 
 /// Metadata about the entire tileset.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Asset {
     /// A basis for storing extensions and extras.

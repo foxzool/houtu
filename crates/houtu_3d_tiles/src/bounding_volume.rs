@@ -1,10 +1,11 @@
-use crate::common::RootProperty;
 use serde::{Deserialize, Serialize};
+
+use crate::common::RootProperty;
 
 /// A bounding volume that encloses a tile or its content.
 /// At least one bounding volume property is required.
 /// Bounding volumes include `box`, `region`, or `sphere`.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct BoundingVolume {
     /// A basis for storing extensions and extras.
     #[serde(flatten)]
