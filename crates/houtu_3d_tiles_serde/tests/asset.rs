@@ -1,4 +1,4 @@
-use houtu_3d_tiles::asset::Asset;
+use houtu_3d_tiles_serde::asset::Asset;
 
 #[test]
 fn test_de() {

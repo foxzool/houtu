@@ -23,4 +23,6 @@ pub mod subtrees;
 pub mod template_uri;
 pub mod tile;
 pub mod tile_formats;
-pub mod tileset;
+mod tileset;
+
+pub use tileset::*;

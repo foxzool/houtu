@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod test_tileset {
-    use houtu_3d_tiles::tileset::Tileset;
+    use houtu_3d_tiles_serde::tileset::Tileset;
     use std::path::PathBuf;
 
     #[test]

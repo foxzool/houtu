@@ -1,4 +1,4 @@
-use houtu_3d_tiles::schema::Schema;
+use houtu_3d_tiles_serde::schema::Schema;
 
 #[test]
 fn test_schema() {
