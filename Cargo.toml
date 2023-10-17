@@ -11,8 +11,9 @@ members = ["crates/*"]
 
 [dependencies]
 houtu_3d_tiles_serde = { path = "crates/houtu_3d_tiles_serde" }
+houtu_3d_tiles = { path = "crates/houtu_3d_tiles" }
 
-bevy = { version = "0.11.3",default-features = false, features = ["bevy_winit", "bevy_render", "x11", "bevy_asset"] }
+bevy = { version = "0.11.3", default-features = false, features = ["bevy_winit", "bevy_render", "x11", "bevy_asset"] }
 serde_json = "1.0.107"
 
 [dev-dependencies]

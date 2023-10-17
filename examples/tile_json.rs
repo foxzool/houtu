@@ -1,21 +1,23 @@
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
-use houtu_3d_tiles_serde::Tileset;
-use std::path::PathBuf;
+use houtu::HoutuPlugin;
+use houtu_3d_tiles::TilesetUrl;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(bevy::log::LogPlugin {
+            level: bevy::log::Level::INFO,
+            filter: "wgpu=error,naga=warn,houtu=debug".to_string(),
+            ..default()
+        }))
         .add_plugins(EguiPlugin)
-        .add_systems(Startup, load_json)
+        .add_plugins(HoutuPlugin)
+        .add_systems(Startup, load_tileset)
         .run();
 }
 
-fn load_json() {
-    let mut file_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    file_path.push("samples/3d-tiles-samples/1.0/TilesetWithRequestVolume/tileset.json");
-    let file = std::fs::File::open(file_path).unwrap();
-    let tileset_json: Tileset = serde_json::from_reader(&file).unwrap();
-
-    println!("{:#?}", tileset_json);
+fn load_tileset(mut commands: Commands) {
+    commands.spawn(TilesetUrl::new(
+        "https://sandcastle.cesium.com/SampleData/Cesium3DTiles/Tilesets/Tileset/tileset.json",
+    ));
 }
