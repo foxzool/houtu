@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_egui::EguiPlugin;
 use houtu::HoutuPlugin;
-use houtu_3d_tiles::TilesetUrl;
+use houtu_3d_tiles::HoutuTileset;
 
 fn main() {
     App::new()
@@ -17,7 +17,7 @@ fn main() {
 }
 
 fn load_tileset(mut commands: Commands) {
-    commands.spawn(TilesetUrl::new(
+    commands.spawn(HoutuTileset::from_url(
         "https://sandcastle.cesium.com/SampleData/Cesium3DTiles/Tilesets/Tileset/tileset.json",
     ));
 }
