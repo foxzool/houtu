@@ -1,9 +1,10 @@
 use bevy::prelude::*;
-use bevy_http_client::{ehttp, HttpClientPlugin, HttpRequest, HttpResponse};
-
-mod core;
+use bevy_http_client::{HttpClientPlugin, HttpResponse};
 
 pub use core::*;
+use houtu_resource::NetworkResource;
+
+mod core;
 
 pub struct TilesetPlugin;
 
@@ -18,9 +19,19 @@ impl Plugin for TilesetPlugin {
 
 fn added_tileset(
     mut commands: Commands,
-    q_added_url: Query<(Entity, &HoutuTileset), Added<HoutuTileset>>,
+    q_added_tile_set: Query<
+        (Entity, &HoutuTileset),
+        (Added<HoutuTileset>, Without<NetworkResource>),
+    >,
 ) {
-    for (entity, tileset) in q_added_url.iter() {
+    for (entity, tileset) in q_added_tile_set.iter() {
+        let net_res = NetworkResource::new(tileset.url.clone());
+        debug!(
+            "load tileset from remote url: {:?}",
+            tileset.url.to_string()
+        );
+        commands.entity(entity).insert(net_res);
+
         // match tileset.base_path.scheme() {
         //     "http" | "https" => {
         //         debug!("load tileset from remote url: {:?}", tileset.base_path);

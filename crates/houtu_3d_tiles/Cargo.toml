@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+houtu_resource = { path = "../houtu_resource" }
+
 anyhow = "1"
 bevy = { workspace = true, features = ["bevy_winit", "bevy_render", "x11", "bevy_asset"] }
 bevy_http_client = "0.1.0"

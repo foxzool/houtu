@@ -1,10 +1,11 @@
 use anyhow::{anyhow, Result};
 use bevy::prelude::*;
+use houtu_resource::ResourceBuilder;
 use url::Url;
 
 #[derive(Debug, Component)]
 pub struct HoutuTileset {
-    base_path: Url,
+    pub url: Url,
 }
 
 impl HoutuTileset {
@@ -20,8 +21,17 @@ impl HoutuTileset {
     ];
 
     pub fn from_url(url: &str) -> Self {
+        // let resource = ResourceBuilder::new(url).build();
+        // let mut base_path = None;
+        // if resource.extension() == "json" {
+        //     base_path = Some(resource.get_base_uri(true));
+        // } else if resource.is_data_uri() {
+        //     base_path = Some("")
+        // }
+
         let url = Url::parse(url).expect("parse url error");
-        Self { base_path: url }
+
+        Self { url }
     }
 
     fn load_tileset(&mut self, tileset_json: crate::specification::Tileset) -> Result<()> {
