@@ -1,13 +1,31 @@
-use bevy::app::App;
-use bevy::prelude::{Component, Plugin};
+use bevy::prelude::*;
+use bevy_http_client::ehttp::Request;
+use bevy_http_client::{HttpClientPlugin, HttpRequest, HttpResponse};
 use reqwest::header::HeaderMap;
+use std::collections::BTreeMap;
 use url::Url;
 
 pub struct HoutuNetResourcePlugin;
 
 impl Plugin for HoutuNetResourcePlugin {
     fn build(&self, app: &mut App) {
-        todo!()
+        app.add_plugins(HttpClientPlugin)
+            .add_systems(Update, load_net_res);
+    }
+}
+
+fn load_net_res(
+    mut commands: Commands,
+    q_net_res: Query<(Entity, &NetworkResource), Added<NetworkResource>>,
+) {
+    for (entity, net_res) in q_net_res.iter() {
+        debug!("load net resource: {:?}", net_res.url);
+        commands.entity(entity).insert(HttpRequest(Request {
+            method: "GET".to_string(),
+            url: net_res.url.to_string(),
+            body: vec![],
+            headers: Default::default(),
+        }));
     }
 }
 
@@ -42,7 +60,7 @@ impl ResourceBuilder {
 #[derive(Debug, Component)]
 pub struct NetworkResource {
     url: Url,
-    headers: HeaderMap,
+    headers: BTreeMap<String, String>,
     retry_count: usize,
 }
 
@@ -50,14 +68,17 @@ impl NetworkResource {
     pub fn new(url: Url) -> Self {
         Self {
             url,
-            headers: HeaderMap::new(),
+            headers: BTreeMap::new(),
             retry_count: 0,
         }
     }
 
     pub fn fetch_json(url: &str) -> Self {
-        let mut headers = HeaderMap::new();
-        headers.insert("Accept", "application/json,*/*;q=0.01".parse().unwrap());
+        let mut headers = BTreeMap::new();
+        headers.insert(
+            "Accept".to_string(),
+            "application/json,*/*;q=0.01".parse().unwrap(),
+        );
 
         Self {
             url: Url::parse(url).expect("parse url error"),
