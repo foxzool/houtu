@@ -1,9 +1,13 @@
 use bevy::prelude::*;
 use bevy_http_client::ehttp::Request;
-use bevy_http_client::{HttpClientPlugin, HttpRequest, HttpResponse};
-use reqwest::header::HeaderMap;
+use bevy_http_client::{HttpClientPlugin, HttpRequest};
 use std::collections::BTreeMap;
 use url::Url;
+
+mod cache;
+mod resource_loader;
+pub use cache::*;
+pub use resource_loader::*;
 
 pub struct HoutuNetResourcePlugin;
 
@@ -16,7 +20,7 @@ impl Plugin for HoutuNetResourcePlugin {
 
 fn load_net_res(
     mut commands: Commands,
-    q_net_res: Query<(Entity, &NetworkResource), Added<NetworkResource>>,
+    q_net_res: Query<(Entity, &HoutuNetworkResource), Added<HoutuNetworkResource>>,
 ) {
     for (entity, net_res) in q_net_res.iter() {
         debug!("load net resource: {:?}", net_res.url);
@@ -48,8 +52,8 @@ impl ResourceBuilder {
         self
     }
 
-    pub fn build(self) -> NetworkResource {
-        NetworkResource {
+    pub fn build(self) -> HoutuNetworkResource {
+        HoutuNetworkResource {
             url: Url::parse(&self.url).expect("parse url error"),
             headers: Default::default(),
             retry_count: 0,
@@ -58,16 +62,24 @@ impl ResourceBuilder {
 }
 
 #[derive(Debug, Component)]
-pub struct NetworkResource {
+pub struct HoutuNetworkResource {
     url: Url,
     headers: BTreeMap<String, String>,
     retry_count: usize,
 }
 
-impl NetworkResource {
+impl HoutuNetworkResource {
     pub fn new(url: Url) -> Self {
         Self {
             url,
+            headers: BTreeMap::new(),
+            retry_count: 0,
+        }
+    }
+
+    pub fn set_url(url: &str) -> Self {
+        Self {
+            url: Url::parse(url).expect("parse url error"),
             headers: BTreeMap::new(),
             retry_count: 0,
         }
